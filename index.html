@@ -273,6 +273,31 @@
         .help-feature h4 { color: #58a6ff; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
         .help-feature h4 svg { width: 16px; height: 16px; }
         .help-feature p { color: #8b949e; font-size: 13px; line-height: 1.5; }
+
+        /* Celebration modal */
+        .celebration-modal { max-width: 500px; text-align: center; }
+        .celebration-modal h3 { font-size: 24px; justify-content: center; margin-bottom: 20px; }
+        .celebration-section { margin: 20px 0; text-align: left; }
+        .celebration-section h4 { font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .celebration-section.approved h4 { color: #58a6ff; }
+        .celebration-section.merged h4 { color: #a371f7; }
+        .celebration-list { list-style: none; padding: 0; margin: 0; }
+        .celebration-list li { padding: 8px 12px; background: #21262d; border-radius: 6px; margin-bottom: 8px; }
+        .celebration-list li a { color: #c9d1d9; text-decoration: none; display: block; }
+        .celebration-list li a:hover { color: #58a6ff; }
+        .celebration-list li .pr-repo { font-size: 11px; color: #8b949e; margin-bottom: 2px; }
+        .celebration-list li .pr-title { font-size: 13px; }
+
+        /* Confetti */
+        .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000; overflow: hidden; }
+        .confetti { position: absolute; width: 10px; height: 10px; top: -10px; animation: confetti-fall 3s linear forwards; }
+        .confetti.square { border-radius: 0; }
+        .confetti.circle { border-radius: 50%; }
+        .confetti.triangle { width: 0; height: 0; background: transparent !important; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 10px solid var(--confetti-color); }
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -436,6 +461,18 @@
             </div>
         </div>
 
+        <!-- Celebration Modal -->
+        <div class="modal-overlay" id="celebrationModal" style="display: none;">
+            <div class="modal celebration-modal">
+                <h3 data-i18n="celebrationTitle">Congratulations!</h3>
+                <div id="celebrationContent"></div>
+                <button class="btn-primary" onclick="hideCelebrationModal()" data-i18n="celebrationClose">Awesome!</button>
+            </div>
+        </div>
+
+        <!-- Confetti container -->
+        <div class="confetti-container" id="confettiContainer"></div>
+
         <div class="progress" id="progress" style="display: none;">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             <div class="progress-text" id="progressText" data-i18n="loading">Loading...</div>
@@ -523,6 +560,7 @@
         const TOKEN_KEY = 'pr_dashboard_token';
         const USERNAME_KEY = 'pr_dashboard_username';
         const LANG_KEY = 'pr_dashboard_lang';
+        const CELEBRATION_KEY = 'pr_dashboard_celebration';
 
         // Bots to ignore when determining who needs to respond
         const IGNORED_BOTS = [
@@ -621,7 +659,11 @@
                 helpFeature4Desc: 'By default, PRs older than 2 years are hidden. Enable the toggle to show them.',
                 helpFeature5Title: 'Filters & Search',
                 helpFeature5Desc: 'Filter by repository using the buttons, or search by title, author, or label.',
-                helpClose: 'Got it!'
+                helpClose: 'Got it!',
+                celebrationTitle: 'Congratulations!',
+                celebrationClose: 'Awesome!',
+                newApprovals: 'New approvals',
+                newMerges: 'Newly merged'
             },
             fr: {
                 subtitle: 'Mes PRs sur tous mes projets de contribution',
@@ -701,7 +743,11 @@
                 helpFeature4Desc: 'Par défaut, les PRs de plus de 2 ans sont masquées. Activez le toggle pour les afficher.',
                 helpFeature5Title: 'Filtres & Recherche',
                 helpFeature5Desc: 'Filtrez par dépôt avec les boutons, ou recherchez par titre, auteur ou label.',
-                helpClose: 'Compris !'
+                helpClose: 'Compris !',
+                celebrationTitle: 'Félicitations !',
+                celebrationClose: 'Super !',
+                newApprovals: 'Nouvelles approbations',
+                newMerges: 'Nouvellement mergées'
             },
             de: {
                 subtitle: 'Meine PRs in allen meinen Beitragsprojekten',
@@ -781,7 +827,11 @@
                 helpFeature4Desc: 'Standardmäßig werden PRs älter als 2 Jahre ausgeblendet. Aktivieren Sie den Schalter, um sie anzuzeigen.',
                 helpFeature5Title: 'Filter & Suche',
                 helpFeature5Desc: 'Filtern Sie nach Repository mit den Schaltflächen oder suchen Sie nach Titel, Autor oder Label.',
-                helpClose: 'Verstanden!'
+                helpClose: 'Verstanden!',
+                celebrationTitle: 'Herzlichen Glückwunsch!',
+                celebrationClose: 'Super!',
+                newApprovals: 'Neue Genehmigungen',
+                newMerges: 'Neu gemergt'
             },
             es: {
                 subtitle: 'Mis PRs en todos mis proyectos de contribución',
@@ -861,7 +911,11 @@
                 helpFeature4Desc: 'Por defecto, las PRs de más de 2 años están ocultas. Activa el interruptor para mostrarlas.',
                 helpFeature5Title: 'Filtros y búsqueda',
                 helpFeature5Desc: 'Filtra por repositorio usando los botones, o busca por título, autor o etiqueta.',
-                helpClose: '¡Entendido!'
+                helpClose: '¡Entendido!',
+                celebrationTitle: '¡Felicidades!',
+                celebrationClose: '¡Genial!',
+                newApprovals: 'Nuevas aprobaciones',
+                newMerges: 'Recién fusionadas'
             },
             it: {
                 subtitle: 'Le mie PR in tutti i miei progetti di contribuzione',
@@ -941,7 +995,11 @@
                 helpFeature4Desc: 'Per impostazione predefinita, le PR più vecchie di 2 anni sono nascoste. Attiva l\'interruttore per mostrarle.',
                 helpFeature5Title: 'Filtri e ricerca',
                 helpFeature5Desc: 'Filtra per repository usando i pulsanti, o cerca per titolo, autore o etichetta.',
-                helpClose: 'Capito!'
+                helpClose: 'Capito!',
+                celebrationTitle: 'Congratulazioni!',
+                celebrationClose: 'Fantastico!',
+                newApprovals: 'Nuove approvazioni',
+                newMerges: 'Appena fuse'
             }
         };
 
@@ -1407,6 +1465,108 @@
 
         function hideHelpModal() {
             document.getElementById('helpModal').style.display = 'none';
+        }
+
+        // Celebration functions
+        function getCelebrationState() {
+            try {
+                const stored = localStorage.getItem(CELEBRATION_KEY);
+                return stored ? JSON.parse(stored) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function saveCelebrationState(approvedPRs, mergedPRs) {
+            const state = {
+                approvedUrls: approvedPRs.map(pr => pr.html_url),
+                mergedUrls: mergedPRs.map(pr => pr.html_url)
+            };
+            localStorage.setItem(CELEBRATION_KEY, JSON.stringify(state));
+        }
+
+        function detectNewCelebrations(currentApproved, currentMerged, previousState) {
+            if (!previousState) return { newApproved: [], newMerged: [] };
+
+            const prevApprovedSet = new Set(previousState.approvedUrls || []);
+            const prevMergedSet = new Set(previousState.mergedUrls || []);
+
+            const newApproved = currentApproved.filter(pr => !prevApprovedSet.has(pr.html_url));
+            const newMerged = currentMerged.filter(pr => !prevMergedSet.has(pr.html_url));
+
+            return { newApproved, newMerged };
+        }
+
+        function generateConfetti() {
+            const container = document.getElementById('confettiContainer');
+            container.innerHTML = '';
+
+            const colors = ['#58a6ff', '#a371f7', '#3fb950', '#f78166', '#ffd33d', '#ff7b72'];
+            const shapes = ['square', 'circle', 'triangle'];
+
+            for (let i = 0; i < 150; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti ' + shapes[Math.floor(Math.random() * shapes.length)];
+
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.setProperty('--confetti-color', color);
+                confetti.style.backgroundColor = color;
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+
+                container.appendChild(confetti);
+            }
+
+            // Clean up after animation
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function showCelebration(newApproved, newMerged) {
+            let content = '';
+
+            if (newApproved.length > 0) {
+                content += `<div class="celebration-section approved">
+                    <h4>✅ ${t('newApprovals')}</h4>
+                    <ul class="celebration-list">`;
+                newApproved.forEach(pr => {
+                    const repo = pr.html_url.match(/github\.com\/([^\/]+\/[^\/]+)/)?.[1] || '';
+                    content += `<li>
+                        <a href="${pr.html_url}" target="_blank">
+                            <div class="pr-repo">${repo}</div>
+                            <div class="pr-title">#${pr.number} - ${pr.title}</div>
+                        </a>
+                    </li>`;
+                });
+                content += '</ul></div>';
+            }
+
+            if (newMerged.length > 0) {
+                content += `<div class="celebration-section merged">
+                    <h4>🔀 ${t('newMerges')}</h4>
+                    <ul class="celebration-list">`;
+                newMerged.forEach(pr => {
+                    const repo = pr.html_url.match(/github\.com\/([^\/]+\/[^\/]+)/)?.[1] || '';
+                    content += `<li>
+                        <a href="${pr.html_url}" target="_blank">
+                            <div class="pr-repo">${repo}</div>
+                            <div class="pr-title">#${pr.number} - ${pr.title}</div>
+                        </a>
+                    </li>`;
+                });
+                content += '</ul></div>';
+            }
+
+            document.getElementById('celebrationContent').innerHTML = content;
+            document.getElementById('celebrationModal').style.display = 'flex';
+            generateConfetti();
+        }
+
+        function hideCelebrationModal() {
+            document.getElementById('celebrationModal').style.display = 'none';
+            document.getElementById('confettiContainer').innerHTML = '';
         }
 
         function updateConfigDisplay() {
@@ -2012,6 +2172,7 @@
         }
 
         let currentRepoFilter = 'all';
+        let celebrationChecked = false;
 
         function getUniqueRepos() {
             const repos = {};
@@ -2087,6 +2248,24 @@
             // Update KPI evolutions
             updateKPIEvolutions(openPRs, approvedPRs, mergedPRs, closedPRs);
 
+            // Check for celebrations (only once per page load, only for user's PRs)
+            if (!celebrationChecked && currentRepoFilter === 'all') {
+                celebrationChecked = true;
+                const myApprovedPRs = approvedPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
+                const myMergedPRs = mergedPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
+
+                const previousState = getCelebrationState();
+                const { newApproved, newMerged } = detectNewCelebrations(myApprovedPRs, myMergedPRs, previousState);
+
+                // Save current state
+                saveCelebrationState(myApprovedPRs, myMergedPRs);
+
+                // Trigger celebration if there are new approvals or merges
+                if (newApproved.length > 0 || newMerged.length > 0) {
+                    setTimeout(() => showCelebration(newApproved, newMerged), 500);
+                }
+            }
+
             // Render tables
             document.getElementById('content-mine').innerHTML = createTable(minePRs);
             document.getElementById('content-open').innerHTML = createTable(openPRs);
@@ -2119,6 +2298,7 @@
             const credentialsModal = document.getElementById('credentialsModal');
             const settingsModal = document.getElementById('settingsModal');
             const helpModal = document.getElementById('helpModal');
+            const celebrationModal = document.getElementById('celebrationModal');
             if (e.target === credentialsModal && loadCredentials()) {
                 hideModal();
             }
@@ -2128,6 +2308,9 @@
             if (e.target === helpModal) {
                 hideHelpModal();
             }
+            if (e.target === celebrationModal) {
+                hideCelebrationModal();
+            }
         });
 
         // Handle Enter/Escape keys in modals
@@ -2135,6 +2318,7 @@
             const credentialsModal = document.getElementById('credentialsModal');
             const settingsModal = document.getElementById('settingsModal');
             const helpModal = document.getElementById('helpModal');
+            const celebrationModal = document.getElementById('celebrationModal');
 
             if (credentialsModal.style.display === 'flex') {
                 if (e.key === 'Enter') saveCredentials();
@@ -2145,6 +2329,9 @@
             }
             if (helpModal.style.display === 'flex' && e.key === 'Escape') {
                 hideHelpModal();
+            }
+            if (celebrationModal.style.display === 'flex' && e.key === 'Escape') {
+                hideCelebrationModal();
             }
         });
 
