@@ -174,6 +174,25 @@
         .donut-legend-color { width: 12px; height: 12px; border-radius: 3px; }
         .donut-legend-divider { width: 100%; height: 1px; background: #30363d; margin: 5px 0; }
 
+        /* Badges/Medals */
+        .badges-container { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; min-width: 280px; display: flex; flex-direction: column; }
+        .badges-title { font-size: 12px; color: #8b949e; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        .badges-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 280px; }
+        .badge-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #21262d; border-radius: 6px; transition: all 0.2s; }
+        .badge-item:hover { background: #30363d; }
+        .badge-medal { font-size: 24px; line-height: 1; }
+        .badge-info { flex: 1; min-width: 0; }
+        .badge-repo { font-size: 12px; color: #c9d1d9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge-count { font-size: 10px; color: #8b949e; }
+        .badge-level { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; white-space: nowrap; }
+        .badge-level.bronze { background: rgba(205, 127, 50, 0.2); color: #cd7f32; }
+        .badge-level.silver { background: rgba(192, 192, 192, 0.2); color: #c0c0c0; }
+        .badge-level.gold { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+        .badge-level.diamond { background: rgba(185, 242, 255, 0.2); color: #b9f2ff; }
+        .badge-level.platinum { background: rgba(229, 228, 226, 0.2); color: #e5e4e2; }
+        .badge-level.legendary { background: rgba(255, 0, 128, 0.2); color: #ff69b4; }
+        .badges-empty { text-align: center; color: #6e7681; font-size: 13px; padding: 20px; }
+
         /* Search */
         .search-bar { margin-bottom: 20px; }
         .search-bar input { width: 100%; padding: 10px 15px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #c9d1d9; font-size: 14px; }
@@ -521,6 +540,12 @@
                     </div>
                     <div class="donut-legend" id="donutLegend"></div>
                 </div>
+                <div class="badges-container">
+                    <div class="badges-title" data-i18n="badgesTitle">Contribution Badges</div>
+                    <div class="badges-list" id="badgesList">
+                        <div class="badges-empty" data-i18n="noBadges">No merged PRs yet</div>
+                    </div>
+                </div>
             </div>
 
             <div class="search-bar">
@@ -663,7 +688,16 @@
                 celebrationTitle: 'Congratulations!',
                 celebrationClose: 'Awesome!',
                 newApprovals: 'New approvals',
-                newMerges: 'Newly merged'
+                newMerges: 'Newly merged',
+                badgesTitle: 'Contribution Badges',
+                noBadges: 'No merged PRs yet',
+                badgeBronze: 'Bronze',
+                badgeSilver: 'Silver',
+                badgeGold: 'Gold',
+                badgeDiamond: 'Diamond',
+                badgePlatinum: 'Platinum',
+                badgeLegendary: 'Legendary',
+                mergedPrs: 'merged PRs'
             },
             fr: {
                 subtitle: 'Mes PRs sur tous mes projets de contribution',
@@ -747,7 +781,16 @@
                 celebrationTitle: 'Félicitations !',
                 celebrationClose: 'Super !',
                 newApprovals: 'Nouvelles approbations',
-                newMerges: 'Nouvellement mergées'
+                newMerges: 'Nouvellement mergées',
+                badgesTitle: 'Badges de contribution',
+                noBadges: 'Aucune PR mergée',
+                badgeBronze: 'Bronze',
+                badgeSilver: 'Argent',
+                badgeGold: 'Or',
+                badgeDiamond: 'Diamant',
+                badgePlatinum: 'Platine',
+                badgeLegendary: 'Légendaire',
+                mergedPrs: 'PRs mergées'
             },
             de: {
                 subtitle: 'Meine PRs in allen meinen Beitragsprojekten',
@@ -831,7 +874,16 @@
                 celebrationTitle: 'Herzlichen Glückwunsch!',
                 celebrationClose: 'Super!',
                 newApprovals: 'Neue Genehmigungen',
-                newMerges: 'Neu gemergt'
+                newMerges: 'Neu gemergt',
+                badgesTitle: 'Beitrags-Abzeichen',
+                noBadges: 'Noch keine gemergten PRs',
+                badgeBronze: 'Bronze',
+                badgeSilver: 'Silber',
+                badgeGold: 'Gold',
+                badgeDiamond: 'Diamant',
+                badgePlatinum: 'Platin',
+                badgeLegendary: 'Legendär',
+                mergedPrs: 'gemergte PRs'
             },
             es: {
                 subtitle: 'Mis PRs en todos mis proyectos de contribución',
@@ -915,7 +967,16 @@
                 celebrationTitle: '¡Felicidades!',
                 celebrationClose: '¡Genial!',
                 newApprovals: 'Nuevas aprobaciones',
-                newMerges: 'Recién fusionadas'
+                newMerges: 'Recién fusionadas',
+                badgesTitle: 'Insignias de contribución',
+                noBadges: 'Sin PRs fusionadas aún',
+                badgeBronze: 'Bronce',
+                badgeSilver: 'Plata',
+                badgeGold: 'Oro',
+                badgeDiamond: 'Diamante',
+                badgePlatinum: 'Platino',
+                badgeLegendary: 'Legendario',
+                mergedPrs: 'PRs fusionadas'
             },
             it: {
                 subtitle: 'Le mie PR in tutti i miei progetti di contribuzione',
@@ -999,7 +1060,16 @@
                 celebrationTitle: 'Congratulazioni!',
                 celebrationClose: 'Fantastico!',
                 newApprovals: 'Nuove approvazioni',
-                newMerges: 'Appena fuse'
+                newMerges: 'Appena fuse',
+                badgesTitle: 'Badge di contribuzione',
+                noBadges: 'Nessuna PR fusa ancora',
+                badgeBronze: 'Bronzo',
+                badgeSilver: 'Argento',
+                badgeGold: 'Oro',
+                badgeDiamond: 'Diamante',
+                badgePlatinum: 'Platino',
+                badgeLegendary: 'Leggendario',
+                mergedPrs: 'PR fuse'
             }
         };
 
@@ -1385,6 +1455,64 @@
             renderEvolution('evolution-approved', approvedDay, approvedWeek, approvedMonth);
             renderEvolution('evolution-merged', mergedDay, mergedWeek, mergedMonth);
             renderEvolution('evolution-closed', closedDay, closedWeek, closedMonth);
+        }
+
+        // Badges calculation and rendering
+        function updateBadges(mergedPRs) {
+            const badgesList = document.getElementById('badgesList');
+            if (!badgesList) return;
+
+            // Count merged PRs per repo
+            const repoMergedCounts = {};
+            const repoOwners = {};
+            mergedPRs.forEach(pr => {
+                const repoName = getRepoName(pr);
+                repoMergedCounts[repoName] = (repoMergedCounts[repoName] || 0) + 1;
+                // Extract owner from repo name (owner/repo)
+                const owner = repoName.split('/')[0];
+                repoOwners[repoName] = owner;
+            });
+
+            // No merged PRs
+            if (Object.keys(repoMergedCounts).length === 0) {
+                badgesList.innerHTML = `<div class="badges-empty">${t('noBadges')}</div>`;
+                return;
+            }
+
+            // Sort by count (descending)
+            const sortedRepos = Object.entries(repoMergedCounts).sort((a, b) => b[1] - a[1]);
+
+            // Generate badges HTML
+            let html = '';
+            sortedRepos.forEach(([repoName, count]) => {
+                const badge = getBadgeInfo(count);
+                const owner = repoOwners[repoName];
+                const shortName = repoName.split('/')[1] || repoName;
+                const avatarUrl = `https://github.com/${owner}.png?size=40`;
+
+                html += `
+                    <div class="badge-item">
+                        <img src="${avatarUrl}" alt="${owner}" style="width: 32px; height: 32px; border-radius: 6px; border: 1px solid #30363d;">
+                        <span class="badge-medal">${badge.emoji}</span>
+                        <div class="badge-info">
+                            <div class="badge-repo" title="${repoName}">${shortName}</div>
+                            <div class="badge-count">${count} ${t('mergedPrs')}</div>
+                        </div>
+                        <span class="badge-level ${badge.level}">${t('badge' + badge.levelName)}</span>
+                    </div>
+                `;
+            });
+
+            badgesList.innerHTML = html;
+        }
+
+        function getBadgeInfo(count) {
+            if (count >= 50) return { emoji: '👑', level: 'legendary', levelName: 'Legendary' };
+            if (count >= 20) return { emoji: '🏆', level: 'platinum', levelName: 'Platinum' };
+            if (count >= 10) return { emoji: '💎', level: 'diamond', levelName: 'Diamond' };
+            if (count >= 6) return { emoji: '🥇', level: 'gold', levelName: 'Gold' };
+            if (count >= 3) return { emoji: '🥈', level: 'silver', levelName: 'Silver' };
+            return { emoji: '🥉', level: 'bronze', levelName: 'Bronze' };
         }
 
         // Credentials management
@@ -2249,6 +2377,10 @@
 
             // Update KPI evolutions
             updateKPIEvolutions(openPRs, approvedPRs, mergedPRs, closedPRs);
+
+            // Update badges (only user's merged PRs)
+            const myMergedPRsForBadges = mergedPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
+            updateBadges(myMergedPRsForBadges);
 
             // Check for celebrations (only once per page load, only for user's PRs)
             if (!celebrationChecked && currentRepoFilter === 'all') {
