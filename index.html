@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Contributions Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
@@ -131,14 +132,43 @@
         .generated { text-align: center; color: #484f58; margin-top: 30px; font-size: 12px; padding: 20px; border-top: 1px solid #21262d; }
 
         /* Stats */
-        .stats { display: flex; gap: 20px; margin-bottom: 20px; }
-        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 15px 20px; flex: 1; }
-        .stat-value { font-size: 28px; font-weight: 600; color: #c9d1d9; }
-        .stat-label { font-size: 12px; color: #8b949e; margin-top: 5px; }
-        .stat-card.mine .stat-value { color: #8957e5; }
+        .stats-container { display: flex; gap: 20px; margin-bottom: 20px; align-items: stretch; }
+        .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex: 1; }
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .stat-value { font-size: 32px; font-weight: 600; color: #c9d1d9; }
+        .stat-label { font-size: 13px; color: #8b949e; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-card.open .stat-value { color: #3fb950; }
+        .stat-card.approved .stat-value { color: #58a6ff; }
         .stat-card.merged .stat-value { color: #a371f7; }
         .stat-card.closed .stat-value { color: #f85149; }
+        .stat-card.open { border-left: 3px solid #3fb950; }
+        .stat-card.approved { border-left: 3px solid #58a6ff; }
+        .stat-card.merged { border-left: 3px solid #a371f7; }
+        .stat-card.closed { border-left: 3px solid #f85149; }
+
+        /* KPI Evolution indicators */
+        .stat-value-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .stat-trend { font-size: 20px; line-height: 1; }
+        .stat-trend.up { color: #3fb950; }
+        .stat-trend.down { color: #f85149; }
+        .stat-trend.neutral { color: #6e7681; }
+        .stat-evolution { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+        .stat-diff { font-size: 10px; padding: 2px 5px; border-radius: 4px; display: inline-flex; align-items: center; gap: 2px; }
+        .stat-diff.up { background: rgba(63, 185, 80, 0.2); color: #3fb950; }
+        .stat-diff.down { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        .stat-diff.neutral { background: rgba(139, 148, 158, 0.2); color: #8b949e; }
+        .stat-diff-label { font-size: 9px; color: #6e7681; }
+
+        /* Donut Chart */
+        .donut-container { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; min-width: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .donut-chart-wrapper { position: relative; width: 200px; height: 200px; }
+        .donut-container canvas { width: 100% !important; height: 100% !important; }
+        .donut-title { font-size: 12px; color: #8b949e; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .donut-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; width: 100%; }
+        .donut-legend-section { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .donut-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #c9d1d9; }
+        .donut-legend-color { width: 12px; height: 12px; border-radius: 3px; }
+        .donut-legend-divider { width: 100%; height: 1px; background: #30363d; margin: 5px 0; }
 
         /* Search */
         .search-bar { margin-bottom: 20px; }
@@ -388,22 +418,47 @@
         </div>
 
         <div id="dashboard" style="display: none;">
-            <div class="stats">
-                <div class="stat-card mine">
-                    <div class="stat-value" id="count-mine">0</div>
-                    <div class="stat-label" data-i18n="myPrs">My PRs</div>
+            <div class="stats-container">
+                <div class="stats">
+                    <div class="stat-card open">
+                        <div class="stat-value-row">
+                            <span class="stat-trend neutral" id="trend-open">=</span>
+                            <span class="stat-value" id="count-open">0</span>
+                        </div>
+                        <div class="stat-label">Open</div>
+                        <div class="stat-evolution" id="evolution-open"></div>
+                    </div>
+                    <div class="stat-card approved">
+                        <div class="stat-value-row">
+                            <span class="stat-trend neutral" id="trend-approved">=</span>
+                            <span class="stat-value" id="count-approved">0</span>
+                        </div>
+                        <div class="stat-label">Approved</div>
+                        <div class="stat-evolution" id="evolution-approved"></div>
+                    </div>
+                    <div class="stat-card merged">
+                        <div class="stat-value-row">
+                            <span class="stat-trend neutral" id="trend-merged">=</span>
+                            <span class="stat-value" id="count-merged">0</span>
+                        </div>
+                        <div class="stat-label">Merged</div>
+                        <div class="stat-evolution" id="evolution-merged"></div>
+                    </div>
+                    <div class="stat-card closed">
+                        <div class="stat-value-row">
+                            <span class="stat-trend neutral" id="trend-closed">=</span>
+                            <span class="stat-value" id="count-closed">0</span>
+                        </div>
+                        <div class="stat-label">Closed</div>
+                        <div class="stat-evolution" id="evolution-closed"></div>
+                    </div>
                 </div>
-                <div class="stat-card open">
-                    <div class="stat-value" id="count-open">0</div>
-                    <div class="stat-label">Open</div>
-                </div>
-                <div class="stat-card merged">
-                    <div class="stat-value" id="count-merged">0</div>
-                    <div class="stat-label">Merged</div>
-                </div>
-                <div class="stat-card closed">
-                    <div class="stat-value" id="count-closed">0</div>
-                    <div class="stat-label">Closed</div>
+                <div class="donut-container">
+                    <div class="donut-title">Distribution</div>
+                    <div class="donut-chart-wrapper">
+                        <canvas id="prDonutChart"></canvas>
+                    </div>
+                    <div class="donut-legend" id="donutLegend"></div>
                 </div>
             </div>
 
@@ -925,6 +980,315 @@
         let ghToken = '';
         let forceRefreshReviews = false;
         let showOldPRs = localStorage.getItem(OLD_PRS_KEY) === 'true';
+        let prDonutChart = null;
+
+        // Donut chart colors - Status palette (cool tones matching KPI cards)
+        const STATUS_COLORS = {
+            open: '#3fb950',      // Green
+            approved: '#58a6ff',  // Blue
+            merged: '#a371f7',    // Purple
+            closed: '#f85149'     // Red
+        };
+
+        // Repos palette (warm/earth tones for contrast)
+        const REPO_COLORS = [
+            '#f0883e',  // Orange
+            '#d29922',  // Gold
+            '#db6d28',  // Burnt orange
+            '#e85d04',  // Tangerine
+            '#fab387',  // Peach
+            '#c69026',  // Amber
+            '#f4a261',  // Sandy brown
+            '#e9c46a',  // Saffron
+            '#fca311',  // Yellow orange
+            '#ffb703',  // Selective yellow
+            '#fb8500',  // Orange peel
+            '#d4a373',  // Tan
+            '#dda15e',  // Earth yellow
+            '#bc6c25',  // Sienna
+            '#9c6644'   // Coffee
+        ];
+
+        function updateDonutChart(filteredPRs) {
+            const ctx = document.getElementById('prDonutChart');
+            if (!ctx) return;
+
+            // Calculate status distribution
+            const openPRs = filteredPRs.filter(pr => pr.prState === 'OPEN');
+            const approvedPRs = openPRs.filter(pr => {
+                if (!pr.reviews || !Array.isArray(pr.reviews)) return false;
+                return pr.reviews.some(r => r.state === 'APPROVED');
+            });
+            const openNotApproved = openPRs.length - approvedPRs.length;
+            const mergedPRs = filteredPRs.filter(pr => pr.prState === 'MERGED');
+            const closedPRs = filteredPRs.filter(pr => pr.prState === 'CLOSED');
+
+            // Calculate repo distribution
+            const repoStats = {};
+            filteredPRs.forEach(pr => {
+                const repoName = getRepoName(pr);
+                repoStats[repoName] = (repoStats[repoName] || 0) + 1;
+            });
+
+            // Sort repos by count and take top ones
+            const sortedRepos = Object.entries(repoStats)
+                .sort((a, b) => b[1] - a[1]);
+
+            const repoNames = sortedRepos.map(r => r[0]);
+            const repoCounts = sortedRepos.map(r => r[1]);
+            const repoColors = repoNames.map((_, i) => REPO_COLORS[i % REPO_COLORS.length]);
+
+            // Status data (inner ring)
+            const statusData = [openNotApproved, approvedPRs.length, mergedPRs.length, closedPRs.length];
+            const statusLabels = ['Open', 'Approved', 'Merged', 'Closed'];
+            const statusColors = [STATUS_COLORS.open, STATUS_COLORS.approved, STATUS_COLORS.merged, STATUS_COLORS.closed];
+            const totalPRs = filteredPRs.length;
+
+            // Plugin to draw text in center
+            const centerTextPlugin = {
+                id: 'centerText',
+                afterDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const width = chart.width;
+                    const height = chart.height;
+
+                    ctx.restore();
+
+                    // Draw total number
+                    const fontSize = Math.min(width, height) / 5;
+                    ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#c9d1d9';
+                    ctx.fillText(totalPRs, width / 2, height / 2 - 8);
+
+                    // Draw "PRs" label
+                    const labelSize = fontSize / 2.5;
+                    ctx.font = `${labelSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+                    ctx.fillStyle = '#8b949e';
+                    ctx.fillText('PRs', width / 2, height / 2 + fontSize / 2);
+
+                    ctx.save();
+                }
+            };
+
+            // Destroy existing chart if exists
+            if (prDonutChart) {
+                prDonutChart.destroy();
+            }
+
+            // Create nested donut chart
+            prDonutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [
+                        {
+                            // Inner ring - Status
+                            data: statusData,
+                            backgroundColor: statusColors,
+                            borderColor: '#161b22',
+                            borderWidth: 2,
+                            weight: 1
+                        },
+                        {
+                            // Outer ring - Repos
+                            data: repoCounts,
+                            backgroundColor: repoColors,
+                            borderColor: '#161b22',
+                            borderWidth: 2,
+                            weight: 1
+                        }
+                    ]
+                },
+                plugins: [centerTextPlugin],
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '40%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const datasetIndex = context.datasetIndex;
+                                    const index = context.dataIndex;
+                                    const value = context.raw;
+
+                                    if (datasetIndex === 0) {
+                                        return `${statusLabels[index]}: ${value}`;
+                                    } else {
+                                        // Show full repo name in tooltip
+                                        return `${repoNames[index]}: ${value}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update custom legend
+            updateDonutLegend(statusLabels, statusColors, statusData, repoNames, repoColors, repoCounts);
+        }
+
+        function updateDonutLegend(statusLabels, statusColors, statusData, repoNames, repoColors, repoCounts) {
+            const legendContainer = document.getElementById('donutLegend');
+            if (!legendContainer) return;
+
+            // Extract just the repo name (without owner) for display
+            const shortRepoNames = repoNames.map(name => {
+                const parts = name.split('/');
+                return parts.length > 1 ? parts[1] : name;
+            });
+
+            let html = '';
+
+            // Status legend (inner ring)
+            html += '<div class="donut-legend-section">';
+            statusLabels.forEach((label, i) => {
+                if (statusData[i] > 0) {
+                    html += `<span class="donut-legend-item"><span class="donut-legend-color" style="background: ${statusColors[i]}"></span>${label} (${statusData[i]})</span>`;
+                }
+            });
+            html += '</div>';
+
+            html += '<div class="donut-legend-divider"></div>';
+
+            // Repo legend (outer ring)
+            html += '<div class="donut-legend-section">';
+            shortRepoNames.slice(0, 5).forEach((name, i) => {
+                html += `<span class="donut-legend-item"><span class="donut-legend-color" style="background: ${repoColors[i]}"></span>${name} (${repoCounts[i]})</span>`;
+            });
+            if (repoNames.length > 5) {
+                html += `<span class="donut-legend-item" style="color: #6e7681;">+${repoNames.length - 5} autres</span>`;
+            }
+            html += '</div>';
+
+            legendContainer.innerHTML = html;
+        }
+
+        // Calculate and display KPI evolutions
+        function updateKPIEvolutions(openPRs, approvedPRs, mergedPRs, closedPRs) {
+            const now = new Date();
+            const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+            const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            // Count PRs by period using created_at for Open, updated_at for Merged/Closed
+            function countSince(prs, since, dateField = 'updated_at') {
+                return prs.filter(pr => new Date(pr[dateField]) >= since).length;
+            }
+
+            // Count PRs between two dates
+            function countBetween(prs, from, to, dateField = 'updated_at') {
+                return prs.filter(pr => {
+                    const date = new Date(pr[dateField]);
+                    return date >= from && date < to;
+                }).length;
+            }
+
+            // Count PRs that received an approval since a date
+            function countApprovedSince(prs, since) {
+                return prs.filter(pr => {
+                    if (!pr.reviews || !Array.isArray(pr.reviews)) return false;
+                    const approvals = pr.reviews.filter(r => r.state === 'APPROVED');
+                    if (approvals.length === 0) return false;
+                    return approvals.some(r => {
+                        const reviewDate = new Date(r.submitted_at || r.created_at);
+                        return reviewDate >= since;
+                    });
+                }).length;
+            }
+
+            // Count PRs that received an approval between two dates
+            function countApprovedBetween(prs, from, to) {
+                return prs.filter(pr => {
+                    if (!pr.reviews || !Array.isArray(pr.reviews)) return false;
+                    const approvals = pr.reviews.filter(r => r.state === 'APPROVED');
+                    if (approvals.length === 0) return false;
+                    return approvals.some(r => {
+                        const reviewDate = new Date(r.submitted_at || r.created_at);
+                        return reviewDate >= from && reviewDate < to;
+                    });
+                }).length;
+            }
+
+            // Current week (last 7 days)
+            const openWeek = countSince(openPRs, lastWeek, 'created_at');
+            const approvedWeek = countApprovedSince(approvedPRs, lastWeek);
+            const mergedWeek = countSince(mergedPRs, lastWeek);
+            const closedWeek = countSince(closedPRs, lastWeek);
+
+            // Previous week (7-14 days ago)
+            const openPrevWeek = countBetween(openPRs, twoWeeksAgo, lastWeek, 'created_at');
+            const approvedPrevWeek = countApprovedBetween(approvedPRs, twoWeeksAgo, lastWeek);
+            const mergedPrevWeek = countBetween(mergedPRs, twoWeeksAgo, lastWeek);
+            const closedPrevWeek = countBetween(closedPRs, twoWeeksAgo, lastWeek);
+
+            // Other periods for display
+            const openDay = countSince(openPRs, yesterday, 'created_at');
+            const openMonth = countSince(openPRs, lastMonth, 'created_at');
+            const approvedDay = countApprovedSince(approvedPRs, yesterday);
+            const approvedMonth = countApprovedSince(approvedPRs, lastMonth);
+            const mergedDay = countSince(mergedPRs, yesterday);
+            const mergedMonth = countSince(mergedPRs, lastMonth);
+            const closedDay = countSince(closedPRs, yesterday);
+            const closedMonth = countSince(closedPRs, lastMonth);
+
+            // Render trend arrow: compare current week vs previous week
+            function renderTrend(elementId, currentWeek, previousWeek) {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+
+                if (currentWeek > previousWeek) {
+                    el.textContent = '↑';
+                    el.className = 'stat-trend up';
+                } else if (currentWeek < previousWeek) {
+                    el.textContent = '↓';
+                    el.className = 'stat-trend down';
+                } else {
+                    el.textContent = '=';
+                    el.className = 'stat-trend neutral';
+                }
+            }
+
+            // Render evolution badges
+            function renderEvolution(elementId, day, week, month) {
+                const el = document.getElementById(elementId);
+                if (!el) return;
+
+                let html = '';
+                if (day > 0) {
+                    html += `<span class="stat-diff up" title="Depuis hier">+${day} <span class="stat-diff-label">24h</span></span>`;
+                }
+                if (week > 0) {
+                    html += `<span class="stat-diff up" title="Cette semaine">+${week} <span class="stat-diff-label">7j</span></span>`;
+                }
+                if (month > 0) {
+                    html += `<span class="stat-diff up" title="Ce mois">+${month} <span class="stat-diff-label">30j</span></span>`;
+                }
+                if (!html) {
+                    html = '<span class="stat-diff neutral">-</span>';
+                }
+                el.innerHTML = html;
+            }
+
+            // Update trends (compare current week vs previous week)
+            renderTrend('trend-open', openWeek, openPrevWeek);
+            renderTrend('trend-approved', approvedWeek, approvedPrevWeek);
+            renderTrend('trend-merged', mergedWeek, mergedPrevWeek);
+            renderTrend('trend-closed', closedWeek, closedPrevWeek);
+
+            // Update evolution details
+            renderEvolution('evolution-open', openDay, openWeek, openMonth);
+            renderEvolution('evolution-approved', approvedDay, approvedWeek, approvedMonth);
+            renderEvolution('evolution-merged', mergedDay, mergedWeek, mergedMonth);
+            renderEvolution('evolution-closed', closedDay, closedWeek, closedMonth);
+        }
 
         // Credentials management
         function loadCredentials() {
@@ -1585,8 +1949,8 @@
             const closedPRs = filteredPRs.filter(pr => pr.prState === 'CLOSED');
 
             // Update counts
-            document.getElementById('count-mine').textContent = minePRs.length;
             document.getElementById('count-open').textContent = openPRs.length;
+            document.getElementById('count-approved').textContent = approvedPRs.length;
             document.getElementById('count-merged').textContent = mergedPRs.length;
             document.getElementById('count-closed').textContent = closedPRs.length;
             document.getElementById('tab-count-mine').textContent = minePRs.length;
@@ -1594,6 +1958,12 @@
             document.getElementById('tab-count-approved').textContent = approvedPRs.length;
             document.getElementById('tab-count-merged').textContent = mergedPRs.length;
             document.getElementById('tab-count-closed').textContent = closedPRs.length;
+
+            // Update donut chart
+            updateDonutChart(filteredPRs);
+
+            // Update KPI evolutions
+            updateKPIEvolutions(openPRs, approvedPRs, mergedPRs, closedPRs);
 
             // Render tables
             document.getElementById('content-mine').innerHTML = createTable(minePRs);
