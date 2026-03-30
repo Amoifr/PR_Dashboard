@@ -1752,7 +1752,9 @@
                     }
 
                     const cacheKey = pr.html_url;
-                    if (cacheValid && cache.reviews[cacheKey]) {
+                    // Cache is valid only if reviews AND comments are present
+                    const hasCompleteCache = cacheValid && cache.reviews[cacheKey] && cache.comments?.[cacheKey];
+                    if (hasCompleteCache) {
                         pr.reviews = cache.reviews[cacheKey];
                         pr.issueComments = cache.comments[cacheKey] || [];
                         pr.reviewComments = cache.reviewComments?.[cacheKey] || [];
