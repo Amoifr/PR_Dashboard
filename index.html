@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Contributions Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #c9d1d9; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #58a6ff; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+        h1 svg { width: 32px; height: 32px; }
+        .subtitle { color: #8b949e; margin-bottom: 20px; }
+
+        /* Token input */
+        .token-section { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .token-section h3 { margin-bottom: 10px; color: #c9d1d9; }
+        .token-section .input-group { margin-bottom: 12px; }
+        .token-section label { display: block; font-size: 13px; color: #8b949e; margin-bottom: 5px; }
+        .token-section input { width: 400px; padding: 8px 12px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #c9d1d9; font-family: monospace; }
+        .token-section input[type="text"]:not(.token-input) { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .token-section button { padding: 8px 16px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px; }
+        .token-section button:hover { background: #2ea043; }
+        .token-section button:disabled { background: #30363d; cursor: not-allowed; }
+        .token-section .btn-secondary { background: #21262d; border: 1px solid #30363d; margin-left: 10px; }
+        .token-section .btn-secondary:hover { background: #30363d; }
+        .token-hint { font-size: 12px; color: #8b949e; margin-top: 8px; }
+        .credentials-display { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .credentials-display .credential { background: #21262d; padding: 5px 12px; border-radius: 6px; font-size: 13px; }
+        .credentials-display .credential strong { color: #58a6ff; }
+
+        /* Modal/Popup */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 30px; max-width: 450px; width: 90%; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
+        .modal h3 { margin-bottom: 20px; color: #c9d1d9; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .modal h3 svg { width: 24px; height: 24px; color: #58a6ff; }
+        .modal .input-group { margin-bottom: 15px; }
+        .modal label { display: block; font-size: 13px; color: #8b949e; margin-bottom: 5px; }
+        .modal input { width: 100%; padding: 10px 12px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #c9d1d9; font-size: 14px; }
+        .modal input:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3); }
+        .modal .btn-primary { width: 100%; padding: 12px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; margin-top: 10px; }
+        .modal .btn-primary:hover { background: #2ea043; }
+        .modal .token-hint { font-size: 12px; color: #8b949e; margin-top: 15px; text-align: center; }
+         .modal .help-section { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 15px; margin-top: 20px; font-size: 12px; }
+        .modal .help-section h4 { color: #58a6ff; margin-bottom: 10px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .modal .help-section h4 svg { width: 14px; height: 14px; }
+        .modal .help-section p { color: #8b949e; margin-bottom: 8px; line-height: 1.5; }
+        .modal .help-section a { color: #58a6ff; }
+        .modal .help-section ul { color: #8b949e; margin: 8px 0; padding-left: 20px; }
+        .modal .help-section li { margin: 4px 0; }
+        .modal .help-section code { background: #21262d; padding: 2px 6px; border-radius: 4px; color: #c9d1d9; font-family: monospace; }
+        .modal .security-notice { background: rgba(35, 134, 54, 0.15); border: 1px solid #238636; border-radius: 6px; padding: 12px; margin-top: 15px; display: flex; align-items: flex-start; gap: 10px; }
+        .modal .security-notice svg { width: 18px; height: 18px; color: #3fb950; flex-shrink: 0; margin-top: 2px; }
+        .modal .security-notice p { color: #8b949e; font-size: 12px; line-height: 1.5; margin: 0; }
+        .modal .security-notice strong { color: #3fb950; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: #8b949e; }
+        .loading::after { content: ''; animation: dots 1.5s infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #30363d; }
+        .tab { padding: 12px 20px; cursor: pointer; border: none; background: transparent; color: #8b949e; font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab:hover { color: #c9d1d9; }
+        .tab.active { color: #58a6ff; border-bottom-color: #f78166; }
+        .tab .count { background: #30363d; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
+        .tab.active .count { background: #388bfd33; color: #58a6ff; }
+
+        /* Tab content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; background: #161b22; border-radius: 8px; overflow: hidden; border: 1px solid #30363d; }
+        th { background: #21262d; color: #c9d1d9; padding: 12px 10px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 12px 10px; border-bottom: 1px solid #21262d; vertical-align: middle; font-size: 14px; }
+        tr:hover { background: #1f2937; }
+        tr:last-child td { border-bottom: none; }
+        tr.pr-merged { background: rgba(63, 185, 80, 0.15); }
+        tr.pr-merged:hover { background: rgba(63, 185, 80, 0.25); }
+        tr.pr-approved {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(63, 185, 80, 0.1),
+                rgba(63, 185, 80, 0.1) 10px,
+                rgba(63, 185, 80, 0.2) 10px,
+                rgba(63, 185, 80, 0.2) 20px
+            );
+        }
+        tr.pr-approved:hover { background: rgba(63, 185, 80, 0.25); }
+        tr.pr-closed {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(248, 81, 73, 0.1),
+                rgba(248, 81, 73, 0.1) 10px,
+                rgba(139, 148, 158, 0.1) 10px,
+                rgba(139, 148, 158, 0.1) 20px
+            );
+            opacity: 0.7;
+        }
+        tr.pr-closed:hover { opacity: 1; }
+
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .pr-number { font-weight: 600; color: #58a6ff; }
+        .pr-title { color: #c9d1d9; }
+
+        .label { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; margin: 2px 2px 2px 0; }
+        .label-component { background: #238636; color: #fff; }
+        .label-mine { background: #8957e5; color: #fff; }
+
+        .author { color: #8b949e; }
+        .date { color: #8b949e; font-size: 13px; white-space: nowrap; }
+
+        .status-open { color: #3fb950; }
+        .status-merged { color: #a371f7; }
+        .status-closed { color: #f85149; }
+
+        .review-approved { color: #3fb950; }
+        .review-changes { color: #f85149; }
+        .review-pending { color: #8b949e; }
+
+        .checks-pass { color: #3fb950; }
+        .checks-fail { color: #f85149; }
+        .checks-pending { color: #d29922; }
+
+        .title-cell { max-width: 400px; }
+        .title-cell a { display: block; }
+
+        .generated { text-align: center; color: #484f58; margin-top: 30px; font-size: 12px; padding: 20px; border-top: 1px solid #21262d; }
+
+        /* Stats */
+        .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 15px 20px; flex: 1; }
+        .stat-value { font-size: 28px; font-weight: 600; color: #c9d1d9; }
+        .stat-label { font-size: 12px; color: #8b949e; margin-top: 5px; }
+        .stat-card.mine .stat-value { color: #8957e5; }
+        .stat-card.open .stat-value { color: #3fb950; }
+        .stat-card.merged .stat-value { color: #a371f7; }
+        .stat-card.closed .stat-value { color: #f85149; }
+
+        /* Search */
+        .search-bar { margin-bottom: 20px; }
+        .search-bar input { width: 100%; padding: 10px 15px; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; color: #c9d1d9; font-size: 14px; }
+        .search-bar input:focus { outline: none; border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3); }
+        .search-bar input::placeholder { color: #484f58; }
+
+        /* Repo filter */
+        .repo-filter { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .repo-filter-label { color: #8b949e; font-size: 13px; margin-right: 10px; }
+        .repo-btn { padding: 5px 12px; border: 1px solid #30363d; border-radius: 20px; background: #21262d; color: #c9d1d9; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .repo-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+        .repo-btn.active { background: #388bfd33; border-color: #58a6ff; color: #58a6ff; }
+        .repo-btn .repo-count { background: #30363d; padding: 1px 6px; border-radius: 10px; margin-left: 5px; font-size: 11px; }
+        .repo-btn.active .repo-count { background: #58a6ff; color: #0d1117; }
+
+        /* Reviewers */
+        .reviewer { display: inline-block; margin-left: 3px; }
+        .reviewer-avatar { width: 18px; height: 18px; border-radius: 50%; vertical-align: middle; margin-right: 2px; border: 1px solid #30363d; }
+        .reviewer-name { font-size: 11px; color: #8b949e; }
+        .review-commented { color: #8b949e; }
+        .review-pending-badge { color: #d29922; }
+        .my-turn { background: #238636; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px; font-weight: 500; }
+        .their-turn { background: #6e7681; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 5px; font-weight: 500; }
+
+        /* Progress */
+        .progress { margin-top: 10px; }
+        .progress-bar { height: 4px; background: #30363d; border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #58a6ff; width: 0%; transition: width 0.3s; }
+        .progress-text { font-size: 12px; color: #8b949e; margin-top: 5px; }
+
+        /* Header actions */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+        .refresh-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .refresh-btn:hover { background: #30363d; border-color: #8b949e; }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .refresh-btn svg { width: 16px; height: 16px; }
+        .cache-info { font-size: 11px; color: #6e7681; margin-top: 3px; }
+
+        /* Switch toggle */
+        .switch-container { display: flex; align-items: center; gap: 10px; }
+        .switch-label { font-size: 13px; color: #8b949e; }
+        .switch { position: relative; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #30363d; transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #8b949e; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #f85149; }
+        input:checked + .slider:before { transform: translateX(20px); background-color: #fff; }
+
+        /* Language selector */
+        .lang-selector { position: relative; }
+        .lang-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .lang-btn:hover { background: #30363d; border-color: #8b949e; }
+        .lang-btn .flag { font-size: 16px; }
+        .lang-dropdown { position: absolute; top: 100%; right: 0; margin-top: 5px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; overflow: hidden; display: none; z-index: 100; min-width: 140px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .lang-dropdown.show { display: block; }
+        .lang-option { padding: 10px 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c9d1d9; }
+        .lang-option:hover { background: #21262d; }
+        .lang-option.active { background: #388bfd33; color: #58a6ff; }
+        .lang-option .flag { font-size: 16px; }
+
+        /* Header icon buttons */
+        .header-icon-btn { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .header-icon-btn:hover { background: #30363d; border-color: #8b949e; }
+        .header-icon-btn svg { width: 18px; height: 18px; }
+        .header-icon-btn.has-user { color: #3fb950; border-color: #238636; }
+
+        /* Settings modal */
+        .settings-modal { max-width: 350px; }
+        .settings-modal h3 { font-size: 16px; }
+        .settings-info { margin-bottom: 15px; }
+        .settings-info .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #30363d; }
+        .settings-info .info-row:last-child { border-bottom: none; }
+        .settings-info .info-label { color: #8b949e; font-size: 13px; }
+        .settings-info .info-value { color: #c9d1d9; font-size: 13px; font-weight: 500; }
+        .settings-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .settings-actions button { flex: 1; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-edit { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; }
+        .btn-edit:hover { background: #30363d; }
+        .btn-delete { background: rgba(248, 81, 73, 0.1); border: 1px solid #f85149; color: #f85149; }
+        .btn-delete:hover { background: rgba(248, 81, 73, 0.2); }
+
+        /* Help modal */
+        .help-modal { max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .help-modal h3 { font-size: 18px; margin-bottom: 20px; }
+        .help-feature { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #30363d; }
+        .help-feature:last-of-type { border-bottom: none; margin-bottom: 0; }
+        .help-feature h4 { color: #58a6ff; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        .help-feature h4 svg { width: 16px; height: 16px; }
+        .help-feature p { color: #8b949e; font-size: 13px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <div>
+                <h1>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
+                    My Contributions Dashboard
+                </h1><p class="subtitle" data-i18n="subtitle">My PRs across all my contribution projects</p>
+            </div>
+            <div class="header-actions">
+                <button class="header-icon-btn" onclick="showHelpModal()" title="Help">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.196l-.108.061a.75.75 0 0 1-.75-1.299c.068-.039.128-.074.18-.106l.127-.073c.174-.116.286-.213.367-.323.073-.107.128-.245.128-.439 0-.329-.18-.587-.413-.748A1.3 1.3 0 0 0 8 5.5c-.373 0-.634.089-.824.206-.177.109-.309.261-.398.436a.749.749 0 0 1-1.042.332l-.083-.057ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+                </button>
+                <button class="header-icon-btn" id="settingsBtn" onclick="showSettingsModal()" title="Settings">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.04.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.04-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"></path></svg>
+                </button>
+                <div class="lang-selector">
+                    <button class="lang-btn" onclick="toggleLangDropdown()">
+                        <span class="flag" id="currentFlag">🇬🇧</span>
+                        <span id="currentLang">EN</span>
+                    </button>
+                    <div class="lang-dropdown" id="langDropdown">
+                        <div class="lang-option" data-lang="en"><span class="flag">🇬🇧</span> English</div>
+                        <div class="lang-option" data-lang="fr"><span class="flag">🇫🇷</span> Français</div>
+                        <div class="lang-option" data-lang="de"><span class="flag">🇩🇪</span> Deutsch</div>
+                        <div class="lang-option" data-lang="es"><span class="flag">🇪🇸</span> Español</div>
+                        <div class="lang-option" data-lang="it"><span class="flag">🇮🇹</span> Italiano</div>
+                    </div>
+                </div>
+                <div class="switch-container">
+                    <span class="switch-label" data-i18n="oldPrs">PRs &gt; 2 years</span>
+                    <label class="switch">
+                        <input type="checkbox" id="showOldPRs" onchange="toggleOldPRs()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div>
+                    <button class="refresh-btn" id="refreshBtn" onclick="forceRefresh()">
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z"></path></svg>
+                        <span data-i18n="refresh">Refresh</span>
+                    </button>
+                    <div class="cache-info" id="cacheInfo"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="modal-overlay" id="helpModal" style="display: none;">
+            <div class="modal help-modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.196l-.108.061a.75.75 0 0 1-.75-1.299c.068-.039.128-.074.18-.106l.127-.073c.174-.116.286-.213.367-.323.073-.107.128-.245.128-.439 0-.329-.18-.587-.413-.748A1.3 1.3 0 0 0 8 5.5c-.373 0-.634.089-.824.206-.177.109-.309.261-.398.436a.749.749 0 0 1-1.042.332l-.083-.057ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+                    <span data-i18n="helpModalTitle">How to use this dashboard</span>
+                </h3>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"></path></svg><span data-i18n="helpFeature1Title">Your Pull Requests</span></h4>
+                    <p data-i18n="helpFeature1Desc">This dashboard displays all your PRs (open, merged, closed) across all GitHub repositories where you contribute.</p>
+                </div>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg><span data-i18n="helpFeature2Title">Review Status</span></h4>
+                    <p data-i18n="helpFeature2Desc">Each PR shows its review status: pending, approved, or changes requested. The "My turn" badge indicates when you need to respond.</p>
+                </div>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 5.724V8c0 .248.238.7 1.169 1.159.874.43 2.144.745 3.457.841a.751.751 0 0 1-.112 1.498C5.514 11.388 3.97 11.03 2.8 10.5V13c0 .242.239.694 1.17 1.155.873.43 2.143.745 3.456.841a.751.751 0 0 1-.112 1.498C5.521 16.384 3.97 16.027 2.8 15.5c-.952-.46-1.729-1.102-1.8-2v-8c.071-.9.848-1.543 1.8-2.003C4.025 3 5.5 2.5 7.125 2.5H7.5A1.25 1.25 0 0 1 8.75 1.25h1.5a1.25 1.25 0 0 1 1.25 1.25v1.5a1.25 1.25 0 0 1-1.25 1.25h-1.5A1.25 1.25 0 0 1 7.5 4h-.375c-1.413 0-2.684.434-3.528.891-.858.465-.847.816-.847.809Z"></path><path d="M11.5 10.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm-1.5 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0Z"></path></svg><span data-i18n="helpFeature3Title">Cache System</span></h4>
+                    <p data-i18n="helpFeature3Desc">Data is cached for 4 hours to speed up loading. Use the "Refresh" button to force a fresh load from GitHub.</p>
+                </div>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.75 1a.75.75 0 0 0-.75.75v3c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-3a.75.75 0 0 0-.75-.75h-4.5ZM1.5 3.75a.75.75 0 0 1 .75-.75H4v3.5H2.25a.75.75 0 0 1-.75-.75v-2Zm0 5.5A.75.75 0 0 1 2.25 8.5H4V12H2.25a.75.75 0 0 1-.75-.75v-2Zm12.25-5.5a.75.75 0 0 0-.75-.75H11v3.5h1.75a.75.75 0 0 0 .75-.75v-2Zm0 5.5a.75.75 0 0 0-.75-.75H11V12h1.75a.75.75 0 0 0 .75-.75v-2Z"></path><path d="M5.75 7a.75.75 0 0 0-.75.75v3c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-3a.75.75 0 0 0-.75-.75h-4.5Z"></path></svg><span data-i18n="helpFeature4Title">Old PRs Filter</span></h4>
+                    <p data-i18n="helpFeature4Desc">By default, PRs older than 2 years are hidden. Enable the toggle to show them.</p>
+                </div>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.5 7a4.499 4.499 0 1 1-8.998 0A4.499 4.499 0 0 1 11.5 7Zm-.82 4.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04Z"></path></svg><span data-i18n="helpFeature5Title">Filters & Search</span></h4>
+                    <p data-i18n="helpFeature5Desc">Filter by repository using the buttons, or search by title, author, or label.</p>
+                </div>
+                <button class="btn-primary" onclick="hideHelpModal()" data-i18n="helpClose">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal-overlay" id="settingsModal" style="display: none;">
+            <div class="modal settings-modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.04.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.04-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"></path></svg>
+                    <span data-i18n="settings">Settings</span>
+                </h3>
+                <div class="settings-info">
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="user">User</span>
+                        <span class="info-value" id="settingsUsername">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Token</span>
+                        <span class="info-value">••••••••</span>
+                    </div>
+                </div>
+                <div class="settings-actions">
+                    <button class="btn-edit" onclick="hideSettingsModal(); showModal();" data-i18n="edit">Edit</button>
+                    <button class="btn-delete" onclick="clearCredentials()" data-i18n="delete">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal popup for credentials -->
+        <div class="modal-overlay" id="credentialsModal" style="display: none;">
+            <div class="modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
+                    <span data-i18n="modalTitle">GitHub Configuration</span>
+                </h3>
+                <div class="input-group">
+                    <label for="usernameInput" data-i18n="usernameLabel">GitHub Username</label>
+                    <input type="text" id="usernameInput" data-i18n-placeholder="usernamePlaceholder" placeholder="e.g.: Amoifr">
+                </div>
+                <div class="input-group">
+                    <label for="tokenInput" data-i18n="tokenLabel">GitHub Token (Personal Access Token)</label>
+                    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <button class="btn-primary" onclick="saveCredentials()" data-i18n="save">Save</button>
+
+                <div class="security-notice">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm9.78-2.22-5.5 5.5a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l5.5-5.5a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path></svg>
+                    <p>
+                        <strong data-i18n="securityTitle">100% local and secure</strong><br>
+                        <span data-i18n="securityText">Your credentials are stored only in YOUR browser's localStorage. No data is sent to any third-party server. This page communicates directly with the GitHub API.</span>
+                    </p>
+                </div>
+
+                <div class="help-section">
+                    <h4>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>
+                        <span data-i18n="helpTitle">How to generate a token?</span>
+                    </h4>
+                    <p data-i18n="helpStep1">1. Go to <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings &gt; Tokens (Fine-grained)</a></p>
+                    <p data-i18n="helpStep2">2. Click on <strong>"Generate new token"</strong></p>
+                    <p data-i18n="helpStep3">3. Configure the token:</p>
+                    <ul>
+                        <li data-i18n="helpTokenName"><strong>Token name:</strong> e.g.: "PR Dashboard"</li>
+                        <li data-i18n="helpExpiration"><strong>Expiration:</strong> according to your preference</li>
+                        <li data-i18n="helpRepoAccess"><strong>Repository access:</strong> "All repositories" or select your repos</li>
+                    </ul>
+                    <p data-i18n="helpStep4">4. In <strong>"Permissions"</strong>, enable:</p>
+                    <ul>
+                        <li><code>Pull requests</code> &rarr; <strong>Read-only</strong></li>
+                        <li><code>Issues</code> &rarr; <strong>Read-only</strong></li>
+                        <li data-i18n="helpMetadata"><code>Metadata</code> &rarr; <strong>Read-only</strong> (often enabled by default)</li>
+                    </ul>
+                    <p data-i18n="helpStep5">5. Click <strong>"Generate token"</strong> and paste it here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress" id="progress" style="display: none;">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText" data-i18n="loading">Loading...</div>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <div class="stats">
+                <div class="stat-card mine">
+                    <div class="stat-value" id="count-mine">0</div>
+                    <div class="stat-label" data-i18n="myPrs">My PRs</div>
+                </div>
+                <div class="stat-card open">
+                    <div class="stat-value" id="count-open">0</div>
+                    <div class="stat-label">Open</div>
+                </div>
+                <div class="stat-card merged">
+                    <div class="stat-value" id="count-merged">0</div>
+                    <div class="stat-label">Merged</div>
+                </div>
+                <div class="stat-card closed">
+                    <div class="stat-value" id="count-closed">0</div>
+                    <div class="stat-label">Closed</div>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="search" data-i18n-placeholder="searchPlaceholder" placeholder="Search by title, author or component...">
+            </div>
+
+            <div class="repo-filter" id="repoFilter">
+                <span class="repo-filter-label" data-i18n="filterByRepo">Filter by repo:</span>
+                <button class="repo-btn active" data-repo="all" data-i18n="all">All</button>
+                <!-- Repo buttons will be added dynamically -->
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="mine"><span data-i18n="myPrs">My PRs</span> <span class="count" id="tab-count-mine">0</span></button>
+                <button class="tab" data-tab="open">Open <span class="count" id="tab-count-open">0</span></button>
+                <button class="tab" data-tab="merged">Merged <span class="count" id="tab-count-merged">0</span></button>
+                <button class="tab" data-tab="closed">Closed <span class="count" id="tab-count-closed">0</span></button>
+            </div>
+
+            <div id="content-mine" class="tab-content active"><div class="loading">Chargement</div></div>
+            <div id="content-open" class="tab-content"><div class="loading">Chargement</div></div>
+            <div id="content-merged" class="tab-content"><div class="loading">Chargement</div></div>
+            <div id="content-closed" class="tab-content"><div class="loading">Chargement</div></div>
+        </div>
+
+
+        <p class="generated"><a href="https://github.com/Amoifr" target="_blank">Amoifr - Pascal CESCON</a></p>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.github.com';
+        const CACHE_KEY = 'pr_dashboard_cache';
+        const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in ms
+        const OLD_PRS_KEY = 'pr_dashboard_show_old';
+        const TOKEN_KEY = 'pr_dashboard_token';
+        const USERNAME_KEY = 'pr_dashboard_username';
+        const LANG_KEY = 'pr_dashboard_lang';
+
+        // Translations
+        const translations = {
+            en: {
+                subtitle: 'My PRs across all my contribution projects',
+                oldPrs: 'PRs > 2 years',
+                refresh: 'Refresh',
+                user: 'User',
+                edit: 'Edit',
+                delete: 'Delete',
+                modalTitle: 'GitHub Configuration',
+                usernameLabel: 'GitHub Username',
+                usernamePlaceholder: 'e.g.: Amoifr',
+                tokenLabel: 'GitHub Token (Personal Access Token)',
+                save: 'Save',
+                securityTitle: '100% local and secure',
+                securityText: 'Your credentials are stored only in YOUR browser\'s localStorage. No data is sent to any third-party server. This page communicates directly with the GitHub API.',
+                helpTitle: 'How to generate a token?',
+                helpStep1: '1. Go to <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings > Tokens (Fine-grained)</a>',
+                helpStep2: '2. Click on <strong>"Generate new token"</strong>',
+                helpStep3: '3. Configure the token:',
+                helpTokenName: '<strong>Token name:</strong> e.g.: "PR Dashboard"',
+                helpExpiration: '<strong>Expiration:</strong> according to your preference',
+                helpRepoAccess: '<strong>Repository access:</strong> "All repositories" or select your repos',
+                helpStep4: '4. In <strong>"Permissions"</strong>, enable:',
+                helpMetadata: '<code>Metadata</code> → <strong>Read-only</strong> (often enabled by default)',
+                helpStep5: '5. Click <strong>"Generate token"</strong> and paste it here.',
+                loading: 'Loading...',
+                myPrs: 'My PRs',
+                searchPlaceholder: 'Search by title, author or component...',
+                filterByRepo: 'Filter by repo:',
+                all: 'All',
+                generated: 'Dashboard generated with Claude Code',
+                noPr: 'No PR',
+                pending: 'Pending',
+                waiting: 'Waiting',
+                approved: 'Approved',
+                myTurn: 'My turn',
+                confirmDelete: 'Delete stored credentials?',
+                enterUsername: 'Please enter your GitHub username.',
+                enterToken: 'Please enter your GitHub token.',
+                cacheInfo: 'Cache: {count} PRs, {time} ago',
+                noCache: 'No cache',
+                loadingOpen: 'Loading MY open PRs...',
+                loadingMerged: 'Loading MY merged PRs...',
+                loadingClosed: 'Loading MY closed PRs...',
+                processing: 'Processing data...',
+                displaying: 'Displaying PRs...',
+                loadingReviews: 'Loading reviews...',
+                cached: '{hits} PRs cached, {toFetch} to load...',
+                reviews: 'Reviews {current}/{total}...',
+                done: 'Done!',
+                error: 'Error: ',
+                thRepo: 'Repo',
+                thTitle: 'Title',
+                thAuthor: 'Author',
+                thLabels: 'Labels',
+                thApproved: 'Approved',
+                thReviews: 'Reviews',
+                thCreated: 'Created',
+                thActivity: 'Activity',
+                comments: 'comment(s)',
+                lastComment: 'Last comment:',
+                lastCommentMe: 'Last comment: me',
+                approvedBy: 'Approved by @{user}',
+                settings: 'Settings',
+                help: 'Help',
+                helpModalTitle: 'How to use this dashboard',
+                helpFeature1Title: 'Your Pull Requests',
+                helpFeature1Desc: 'This dashboard displays all your PRs (open, merged, closed) across all GitHub repositories where you contribute.',
+                helpFeature2Title: 'Review Status',
+                helpFeature2Desc: 'Each PR shows its review status: pending, approved, or changes requested. The "My turn" badge indicates when you need to respond.',
+                helpFeature3Title: 'Cache System',
+                helpFeature3Desc: 'Data is cached for 4 hours to speed up loading. Use the "Refresh" button to force a fresh load from GitHub.',
+                helpFeature4Title: 'Old PRs Filter',
+                helpFeature4Desc: 'By default, PRs older than 2 years are hidden. Enable the toggle to show them.',
+                helpFeature5Title: 'Filters & Search',
+                helpFeature5Desc: 'Filter by repository using the buttons, or search by title, author, or label.',
+                helpClose: 'Got it!'
+            },
+            fr: {
+                subtitle: 'Mes PRs sur tous mes projets de contribution',
+                oldPrs: 'PRs > 2 ans',
+                refresh: 'Actualiser',
+                user: 'Utilisateur',
+                edit: 'Modifier',
+                delete: 'Supprimer',
+                modalTitle: 'Configuration GitHub',
+                usernameLabel: 'Nom d\'utilisateur GitHub',
+                usernamePlaceholder: 'ex: Amoifr',
+                tokenLabel: 'Token GitHub (Personal Access Token)',
+                save: 'Enregistrer',
+                securityTitle: '100% local et sécurisé',
+                securityText: 'Vos identifiants sont stockés uniquement dans le localStorage de VOTRE navigateur. Aucune donnée n\'est envoyée à un serveur tiers. Cette page communique directement avec l\'API GitHub.',
+                helpTitle: 'Comment générer un token ?',
+                helpStep1: '1. Allez sur <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings > Tokens (Fine-grained)</a>',
+                helpStep2: '2. Cliquez sur <strong>"Generate new token"</strong>',
+                helpStep3: '3. Configurez le token :',
+                helpTokenName: '<strong>Token name:</strong> ex: "PR Dashboard"',
+                helpExpiration: '<strong>Expiration:</strong> selon votre préférence',
+                helpRepoAccess: '<strong>Repository access:</strong> "All repositories" ou sélectionnez vos repos',
+                helpStep4: '4. Dans <strong>"Permissions"</strong>, activez :',
+                helpMetadata: '<code>Metadata</code> → <strong>Read-only</strong> (souvent activé par défaut)',
+                helpStep5: '5. Cliquez sur <strong>"Generate token"</strong> et copiez-le ici.',
+                loading: 'Chargement...',
+                myPrs: 'Mes PRs',
+                searchPlaceholder: 'Rechercher par titre, auteur ou composant...',
+                filterByRepo: 'Filtrer par repo :',
+                all: 'Tous',
+                generated: 'Dashboard généré avec Claude Code',
+                noPr: 'Aucune PR',
+                pending: 'En attente',
+                waiting: 'Attente',
+                approved: 'Approuvé',
+                myTurn: 'À moi',
+                confirmDelete: 'Supprimer les identifiants stockés ?',
+                enterUsername: 'Veuillez entrer votre nom d\'utilisateur GitHub.',
+                enterToken: 'Veuillez entrer votre token GitHub.',
+                cacheInfo: 'Cache : {count} PRs, il y a {time}',
+                noCache: 'Pas de cache',
+                loadingOpen: 'Chargement de MES PRs open...',
+                loadingMerged: 'Chargement de MES PRs merged...',
+                loadingClosed: 'Chargement de MES PRs closed...',
+                processing: 'Traitement des données...',
+                displaying: 'Affichage des PRs...',
+                loadingReviews: 'Chargement des reviews...',
+                cached: '{hits} PRs en cache, {toFetch} à charger...',
+                reviews: 'Reviews {current}/{total}...',
+                done: 'Terminé !',
+                error: 'Erreur : ',
+                thRepo: 'Repo',
+                thTitle: 'Titre',
+                thAuthor: 'Auteur',
+                thLabels: 'Labels',
+                thApproved: 'Approuvé',
+                thReviews: 'Reviews',
+                thCreated: 'Créée',
+                thActivity: 'Activité',
+                comments: 'commentaire(s)',
+                lastComment: 'Dernier commentaire :',
+                lastCommentMe: 'Dernier commentaire : moi',
+                approvedBy: 'Approuvé par @{user}',
+                settings: 'Paramètres',
+                help: 'Aide',
+                helpModalTitle: 'Comment utiliser ce dashboard',
+                helpFeature1Title: 'Vos Pull Requests',
+                helpFeature1Desc: 'Ce dashboard affiche toutes vos PRs (ouvertes, fusionnées, fermées) sur tous les dépôts GitHub où vous contribuez.',
+                helpFeature2Title: 'Statut des reviews',
+                helpFeature2Desc: 'Chaque PR affiche son statut de review : en attente, approuvée ou modifications demandées. Le badge "À moi" indique quand vous devez répondre.',
+                helpFeature3Title: 'Système de cache',
+                helpFeature3Desc: 'Les données sont mises en cache pendant 4 heures pour accélérer le chargement. Utilisez le bouton "Actualiser" pour forcer un rechargement depuis GitHub.',
+                helpFeature4Title: 'Filtre anciennes PRs',
+                helpFeature4Desc: 'Par défaut, les PRs de plus de 2 ans sont masquées. Activez le toggle pour les afficher.',
+                helpFeature5Title: 'Filtres & Recherche',
+                helpFeature5Desc: 'Filtrez par dépôt avec les boutons, ou recherchez par titre, auteur ou label.',
+                helpClose: 'Compris !'
+            },
+            de: {
+                subtitle: 'Meine PRs in allen meinen Beitragsprojekten',
+                oldPrs: 'PRs > 2 Jahre',
+                refresh: 'Aktualisieren',
+                user: 'Benutzer',
+                edit: 'Bearbeiten',
+                delete: 'Löschen',
+                modalTitle: 'GitHub-Konfiguration',
+                usernameLabel: 'GitHub-Benutzername',
+                usernamePlaceholder: 'z.B.: Amoifr',
+                tokenLabel: 'GitHub-Token (Personal Access Token)',
+                save: 'Speichern',
+                securityTitle: '100% lokal und sicher',
+                securityText: 'Ihre Anmeldedaten werden nur im localStorage IHRES Browsers gespeichert. Es werden keine Daten an Drittanbieter-Server gesendet. Diese Seite kommuniziert direkt mit der GitHub-API.',
+                helpTitle: 'Wie generiere ich einen Token?',
+                helpStep1: '1. Gehen Sie zu <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings > Tokens (Fine-grained)</a>',
+                helpStep2: '2. Klicken Sie auf <strong>"Generate new token"</strong>',
+                helpStep3: '3. Konfigurieren Sie den Token:',
+                helpTokenName: '<strong>Token name:</strong> z.B.: "PR Dashboard"',
+                helpExpiration: '<strong>Expiration:</strong> nach Ihrer Präferenz',
+                helpRepoAccess: '<strong>Repository access:</strong> "All repositories" oder wählen Sie Ihre Repos',
+                helpStep4: '4. Aktivieren Sie unter <strong>"Permissions"</strong>:',
+                helpMetadata: '<code>Metadata</code> → <strong>Read-only</strong> (oft standardmäßig aktiviert)',
+                helpStep5: '5. Klicken Sie auf <strong>"Generate token"</strong> und fügen Sie ihn hier ein.',
+                loading: 'Laden...',
+                myPrs: 'Meine PRs',
+                searchPlaceholder: 'Nach Titel, Autor oder Komponente suchen...',
+                filterByRepo: 'Nach Repo filtern:',
+                all: 'Alle',
+                generated: 'Dashboard erstellt mit Claude Code',
+                noPr: 'Kein PR',
+                pending: 'Ausstehend',
+                waiting: 'Warten',
+                approved: 'Genehmigt',
+                myTurn: 'Mein Zug',
+                confirmDelete: 'Gespeicherte Anmeldedaten löschen?',
+                enterUsername: 'Bitte geben Sie Ihren GitHub-Benutzernamen ein.',
+                enterToken: 'Bitte geben Sie Ihren GitHub-Token ein.',
+                cacheInfo: 'Cache: {count} PRs, vor {time}',
+                noCache: 'Kein Cache',
+                loadingOpen: 'Lade MEINE offenen PRs...',
+                loadingMerged: 'Lade MEINE gemergten PRs...',
+                loadingClosed: 'Lade MEINE geschlossenen PRs...',
+                processing: 'Verarbeite Daten...',
+                displaying: 'Zeige PRs an...',
+                loadingReviews: 'Lade Reviews...',
+                cached: '{hits} PRs im Cache, {toFetch} zu laden...',
+                reviews: 'Reviews {current}/{total}...',
+                done: 'Fertig!',
+                error: 'Fehler: ',
+                thRepo: 'Repo',
+                thTitle: 'Titel',
+                thAuthor: 'Autor',
+                thLabels: 'Labels',
+                thApproved: 'Genehmigt',
+                thReviews: 'Reviews',
+                thCreated: 'Erstellt',
+                thActivity: 'Aktivität',
+                comments: 'Kommentar(e)',
+                lastComment: 'Letzter Kommentar:',
+                lastCommentMe: 'Letzter Kommentar: ich',
+                approvedBy: 'Genehmigt von @{user}',
+                settings: 'Einstellungen',
+                help: 'Hilfe',
+                helpModalTitle: 'So verwenden Sie dieses Dashboard',
+                helpFeature1Title: 'Ihre Pull Requests',
+                helpFeature1Desc: 'Dieses Dashboard zeigt alle Ihre PRs (offen, gemergt, geschlossen) in allen GitHub-Repositories, zu denen Sie beitragen.',
+                helpFeature2Title: 'Review-Status',
+                helpFeature2Desc: 'Jede PR zeigt ihren Review-Status: ausstehend, genehmigt oder Änderungen angefordert. Das Badge "Mein Zug" zeigt an, wann Sie antworten müssen.',
+                helpFeature3Title: 'Cache-System',
+                helpFeature3Desc: 'Daten werden 4 Stunden lang zwischengespeichert, um das Laden zu beschleunigen. Verwenden Sie die Schaltfläche "Aktualisieren", um ein frisches Laden von GitHub zu erzwingen.',
+                helpFeature4Title: 'Filter für alte PRs',
+                helpFeature4Desc: 'Standardmäßig werden PRs älter als 2 Jahre ausgeblendet. Aktivieren Sie den Schalter, um sie anzuzeigen.',
+                helpFeature5Title: 'Filter & Suche',
+                helpFeature5Desc: 'Filtern Sie nach Repository mit den Schaltflächen oder suchen Sie nach Titel, Autor oder Label.',
+                helpClose: 'Verstanden!'
+            },
+            es: {
+                subtitle: 'Mis PRs en todos mis proyectos de contribución',
+                oldPrs: 'PRs > 2 años',
+                refresh: 'Actualizar',
+                user: 'Usuario',
+                edit: 'Editar',
+                delete: 'Eliminar',
+                modalTitle: 'Configuración de GitHub',
+                usernameLabel: 'Nombre de usuario de GitHub',
+                usernamePlaceholder: 'ej: Amoifr',
+                tokenLabel: 'Token de GitHub (Personal Access Token)',
+                save: 'Guardar',
+                securityTitle: '100% local y seguro',
+                securityText: 'Sus credenciales se almacenan únicamente en el localStorage de SU navegador. No se envían datos a ningún servidor de terceros. Esta página se comunica directamente con la API de GitHub.',
+                helpTitle: '¿Cómo generar un token?',
+                helpStep1: '1. Vaya a <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings > Tokens (Fine-grained)</a>',
+                helpStep2: '2. Haga clic en <strong>"Generate new token"</strong>',
+                helpStep3: '3. Configure el token:',
+                helpTokenName: '<strong>Token name:</strong> ej: "PR Dashboard"',
+                helpExpiration: '<strong>Expiration:</strong> según su preferencia',
+                helpRepoAccess: '<strong>Repository access:</strong> "All repositories" o seleccione sus repos',
+                helpStep4: '4. En <strong>"Permissions"</strong>, active:',
+                helpMetadata: '<code>Metadata</code> → <strong>Read-only</strong> (a menudo activado por defecto)',
+                helpStep5: '5. Haga clic en <strong>"Generate token"</strong> y péguelo aquí.',
+                loading: 'Cargando...',
+                myPrs: 'Mis PRs',
+                searchPlaceholder: 'Buscar por título, autor o componente...',
+                filterByRepo: 'Filtrar por repo:',
+                all: 'Todos',
+                generated: 'Dashboard generado con Claude Code',
+                noPr: 'Sin PR',
+                pending: 'Pendiente',
+                waiting: 'Esperando',
+                approved: 'Aprobado',
+                myTurn: 'Mi turno',
+                confirmDelete: '¿Eliminar las credenciales almacenadas?',
+                enterUsername: 'Por favor, ingrese su nombre de usuario de GitHub.',
+                enterToken: 'Por favor, ingrese su token de GitHub.',
+                cacheInfo: 'Caché: {count} PRs, hace {time}',
+                noCache: 'Sin caché',
+                loadingOpen: 'Cargando MIS PRs abiertas...',
+                loadingMerged: 'Cargando MIS PRs fusionadas...',
+                loadingClosed: 'Cargando MIS PRs cerradas...',
+                processing: 'Procesando datos...',
+                displaying: 'Mostrando PRs...',
+                loadingReviews: 'Cargando revisiones...',
+                cached: '{hits} PRs en caché, {toFetch} por cargar...',
+                reviews: 'Revisiones {current}/{total}...',
+                done: '¡Listo!',
+                error: 'Error: ',
+                thRepo: 'Repo',
+                thTitle: 'Título',
+                thAuthor: 'Autor',
+                thLabels: 'Etiquetas',
+                thApproved: 'Aprobado',
+                thReviews: 'Revisiones',
+                thCreated: 'Creada',
+                thActivity: 'Actividad',
+                comments: 'comentario(s)',
+                lastComment: 'Último comentario:',
+                lastCommentMe: 'Último comentario: yo',
+                approvedBy: 'Aprobado por @{user}',
+                settings: 'Configuración',
+                help: 'Ayuda',
+                helpModalTitle: 'Cómo usar este dashboard',
+                helpFeature1Title: 'Tus Pull Requests',
+                helpFeature1Desc: 'Este dashboard muestra todas tus PRs (abiertas, fusionadas, cerradas) en todos los repositorios de GitHub donde contribuyes.',
+                helpFeature2Title: 'Estado de revisión',
+                helpFeature2Desc: 'Cada PR muestra su estado de revisión: pendiente, aprobada o cambios solicitados. La insignia "Mi turno" indica cuándo necesitas responder.',
+                helpFeature3Title: 'Sistema de caché',
+                helpFeature3Desc: 'Los datos se almacenan en caché durante 4 horas para acelerar la carga. Usa el botón "Actualizar" para forzar una carga fresca desde GitHub.',
+                helpFeature4Title: 'Filtro de PRs antiguas',
+                helpFeature4Desc: 'Por defecto, las PRs de más de 2 años están ocultas. Activa el interruptor para mostrarlas.',
+                helpFeature5Title: 'Filtros y búsqueda',
+                helpFeature5Desc: 'Filtra por repositorio usando los botones, o busca por título, autor o etiqueta.',
+                helpClose: '¡Entendido!'
+            },
+            it: {
+                subtitle: 'Le mie PR in tutti i miei progetti di contribuzione',
+                oldPrs: 'PR > 2 anni',
+                refresh: 'Aggiorna',
+                user: 'Utente',
+                edit: 'Modifica',
+                delete: 'Elimina',
+                modalTitle: 'Configurazione GitHub',
+                usernameLabel: 'Nome utente GitHub',
+                usernamePlaceholder: 'es: Amoifr',
+                tokenLabel: 'Token GitHub (Personal Access Token)',
+                save: 'Salva',
+                securityTitle: '100% locale e sicuro',
+                securityText: 'Le tue credenziali sono memorizzate solo nel localStorage del TUO browser. Nessun dato viene inviato a server di terze parti. Questa pagina comunica direttamente con l\'API di GitHub.',
+                helpTitle: 'Come generare un token?',
+                helpStep1: '1. Vai su <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings > Tokens (Fine-grained)</a>',
+                helpStep2: '2. Clicca su <strong>"Generate new token"</strong>',
+                helpStep3: '3. Configura il token:',
+                helpTokenName: '<strong>Token name:</strong> es: "PR Dashboard"',
+                helpExpiration: '<strong>Expiration:</strong> secondo la tua preferenza',
+                helpRepoAccess: '<strong>Repository access:</strong> "All repositories" o seleziona i tuoi repos',
+                helpStep4: '4. In <strong>"Permissions"</strong>, attiva:',
+                helpMetadata: '<code>Metadata</code> → <strong>Read-only</strong> (spesso attivo di default)',
+                helpStep5: '5. Clicca su <strong>"Generate token"</strong> e incollalo qui.',
+                loading: 'Caricamento...',
+                myPrs: 'Le mie PR',
+                searchPlaceholder: 'Cerca per titolo, autore o componente...',
+                filterByRepo: 'Filtra per repo:',
+                all: 'Tutti',
+                generated: 'Dashboard generato con Claude Code',
+                noPr: 'Nessuna PR',
+                pending: 'In attesa',
+                waiting: 'Attesa',
+                approved: 'Approvato',
+                myTurn: 'Tocca a me',
+                confirmDelete: 'Eliminare le credenziali memorizzate?',
+                enterUsername: 'Per favore, inserisci il tuo nome utente GitHub.',
+                enterToken: 'Per favore, inserisci il tuo token GitHub.',
+                cacheInfo: 'Cache: {count} PR, {time} fa',
+                noCache: 'Nessuna cache',
+                loadingOpen: 'Caricamento delle MIE PR aperte...',
+                loadingMerged: 'Caricamento delle MIE PR fuse...',
+                loadingClosed: 'Caricamento delle MIE PR chiuse...',
+                processing: 'Elaborazione dati...',
+                displaying: 'Visualizzazione PR...',
+                loadingReviews: 'Caricamento revisioni...',
+                cached: '{hits} PR in cache, {toFetch} da caricare...',
+                reviews: 'Revisioni {current}/{total}...',
+                done: 'Fatto!',
+                error: 'Errore: ',
+                thRepo: 'Repo',
+                thTitle: 'Titolo',
+                thAuthor: 'Autore',
+                thLabels: 'Etichette',
+                thApproved: 'Approvato',
+                thReviews: 'Revisioni',
+                thCreated: 'Creata',
+                thActivity: 'Attività',
+                comments: 'commento/i',
+                lastComment: 'Ultimo commento:',
+                lastCommentMe: 'Ultimo commento: io',
+                approvedBy: 'Approvato da @{user}',
+                settings: 'Impostazioni',
+                help: 'Aiuto',
+                helpModalTitle: 'Come usare questa dashboard',
+                helpFeature1Title: 'Le tue Pull Request',
+                helpFeature1Desc: 'Questa dashboard mostra tutte le tue PR (aperte, fuse, chiuse) in tutti i repository GitHub a cui contribuisci.',
+                helpFeature2Title: 'Stato delle revisioni',
+                helpFeature2Desc: 'Ogni PR mostra il suo stato di revisione: in attesa, approvata o modifiche richieste. Il badge "Tocca a me" indica quando devi rispondere.',
+                helpFeature3Title: 'Sistema di cache',
+                helpFeature3Desc: 'I dati vengono memorizzati nella cache per 4 ore per velocizzare il caricamento. Usa il pulsante "Aggiorna" per forzare un caricamento fresco da GitHub.',
+                helpFeature4Title: 'Filtro PR vecchie',
+                helpFeature4Desc: 'Per impostazione predefinita, le PR più vecchie di 2 anni sono nascoste. Attiva l\'interruttore per mostrarle.',
+                helpFeature5Title: 'Filtri e ricerca',
+                helpFeature5Desc: 'Filtra per repository usando i pulsanti, o cerca per titolo, autore o etichetta.',
+                helpClose: 'Capito!'
+            }
+        };
+
+        const langFlags = { en: '🇬🇧', fr: '🇫🇷', de: '🇩🇪', es: '🇪🇸', it: '🇮🇹' };
+        const langNames = { en: 'EN', fr: 'FR', de: 'DE', es: 'ES', it: 'IT' };
+        let currentLang = localStorage.getItem(LANG_KEY) || 'en';
+
+        function t(key, params = {}) {
+            let text = translations[currentLang]?.[key] || translations.en[key] || key;
+            Object.keys(params).forEach(k => {
+                text = text.replace(`{${k}}`, params[k]);
+            });
+            return text;
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                el.innerHTML = t(key);
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                el.placeholder = t(key);
+            });
+            // Update language selector display
+            document.getElementById('currentFlag').textContent = langFlags[currentLang];
+            document.getElementById('currentLang').textContent = langNames[currentLang];
+            // Update active state in dropdown
+            document.querySelectorAll('.lang-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.lang === currentLang);
+            });
+            // Update HTML lang attribute
+            document.documentElement.lang = currentLang;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem(LANG_KEY, lang);
+            applyTranslations();
+            // Re-render dashboard to update dynamic content
+            if (allPRs.length > 0) {
+                renderDashboard();
+            }
+            hideLangDropdown();
+        }
+
+        function toggleLangDropdown() {
+            document.getElementById('langDropdown').classList.toggle('show');
+        }
+
+        function hideLangDropdown() {
+            document.getElementById('langDropdown').classList.remove('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.lang-selector')) {
+                hideLangDropdown();
+            }
+        });
+
+        // Language option click handlers
+        document.querySelectorAll('.lang-option').forEach(opt => {
+            opt.addEventListener('click', () => setLanguage(opt.dataset.lang));
+        });
+
+        // Initialize language selector display immediately
+        if (document.getElementById('currentFlag')) {
+            document.getElementById('currentFlag').textContent = langFlags[currentLang];
+            document.getElementById('currentLang').textContent = langNames[currentLang];
+        }
+
+        let allPRs = [];
+        let myUsername = '';
+        let ghToken = '';
+        let forceRefreshReviews = false;
+        let showOldPRs = localStorage.getItem(OLD_PRS_KEY) === 'true';
+
+        // Credentials management
+        function loadCredentials() {
+            ghToken = localStorage.getItem(TOKEN_KEY) || '';
+            myUsername = localStorage.getItem(USERNAME_KEY) || '';
+            return ghToken && myUsername;
+        }
+
+        function saveCredentials() {
+            const tokenInput = document.getElementById('tokenInput').value.trim();
+            const username = document.getElementById('usernameInput').value.trim();
+
+            if (!username) {
+                alert(t('enterUsername'));
+                return;
+            }
+
+            // Token is optional when editing (keep existing if not provided)
+            const token = tokenInput || ghToken;
+            if (!token) {
+                alert(t('enterToken'));
+                return;
+            }
+
+            localStorage.setItem(TOKEN_KEY, token);
+            localStorage.setItem(USERNAME_KEY, username);
+            ghToken = token;
+            myUsername = username;
+
+            hideModal();
+            updateConfigDisplay();
+
+            // Clear old cache if username changed
+            localStorage.removeItem(CACHE_KEY);
+            loadData();
+        }
+
+        function clearCredentials() {
+            if (!confirm(t('confirmDelete'))) return;
+
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(USERNAME_KEY);
+            ghToken = '';
+            myUsername = '';
+
+            document.getElementById('dashboard').style.display = 'none';
+            updateConfigDisplay();
+        }
+
+        function showModal() {
+            document.getElementById('credentialsModal').style.display = 'flex';
+            document.getElementById('usernameInput').value = myUsername;
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('usernameInput').focus();
+        }
+
+        function hideModal() {
+            document.getElementById('credentialsModal').style.display = 'none';
+        }
+
+        function showSettingsModal() {
+            if (!loadCredentials()) {
+                showModal();
+                return;
+            }
+            document.getElementById('settingsUsername').textContent = myUsername;
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function hideSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function showHelpModal() {
+            document.getElementById('helpModal').style.display = 'flex';
+        }
+
+        function hideHelpModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        function updateConfigDisplay() {
+            const hasCredentials = loadCredentials();
+            const settingsBtn = document.getElementById('settingsBtn');
+
+            if (hasCredentials) {
+                settingsBtn.classList.add('has-user');
+                settingsBtn.title = myUsername;
+                hideModal();
+            } else {
+                settingsBtn.classList.remove('has-user');
+                settingsBtn.title = 'Settings';
+                showModal();
+            }
+        }
+
+        function toggleOldPRs() {
+            showOldPRs = document.getElementById('showOldPRs').checked;
+            localStorage.setItem(OLD_PRS_KEY, showOldPRs);
+            renderDashboard();
+        }
+
+        function isOlderThan2Years(pr) {
+            const twoYearsAgo = new Date();
+            twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+            return new Date(pr.created_at) < twoYearsAgo;
+        }
+
+        function getFilteredPRs() {
+            if (showOldPRs) {
+                return allPRs;
+            }
+            return allPRs.filter(pr => !isOlderThan2Years(pr));
+        }
+
+        // Cache functions
+        function getCache() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                return cached ? JSON.parse(cached) : { reviews: {}, comments: {}, timestamp: 0 };
+            } catch (e) {
+                return { reviews: {}, comments: {}, timestamp: 0 };
+            }
+        }
+
+        function saveCache(cache) {
+            try {
+                cache.timestamp = Date.now();
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+                updateCacheInfo();
+            } catch (e) {
+                console.warn('Failed to save cache:', e);
+            }
+        }
+
+        function isCacheValid() {
+            const cache = getCache();
+            return (Date.now() - cache.timestamp) < CACHE_DURATION;
+        }
+
+        function updateCacheInfo() {
+            const cache = getCache();
+            const info = document.getElementById('cacheInfo');
+            if (cache.timestamp) {
+                const age = Date.now() - cache.timestamp;
+                const hours = Math.floor(age / (60 * 60 * 1000));
+                const minutes = Math.floor((age % (60 * 60 * 1000)) / (60 * 1000));
+                const reviewCount = Object.keys(cache.reviews).length;
+                const timeStr = hours > 0 ? `${hours}h${minutes}m` : `${minutes}m`;
+                info.textContent = t('cacheInfo', { count: reviewCount, time: timeStr });
+            } else {
+                info.textContent = t('noCache');
+            }
+        }
+
+        function forceRefresh() {
+            forceRefreshReviews = true;
+            loadData();
+        }
+
+        async function fetchWithAuth(url) {
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `token ${ghToken}`
+            };
+            const response = await fetch(url, { headers });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+
+        function updateProgress(percent, text) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        async function loadData() {
+            if (!loadCredentials()) {
+                return; // No credentials, don't load
+            }
+
+            const progress = document.getElementById('progress');
+            progress.style.display = 'block';
+
+            try {
+                // Load MY PRs across all GitHub
+                updateProgress(10, t('loadingOpen'));
+                const myOpenPRs = await fetchWithAuth(
+                    `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:open&per_page=100&sort=updated`
+                );
+
+                updateProgress(40, t('loadingMerged'));
+                const myMergedPRs = await fetchWithAuth(
+                    `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:merged&per_page=100&sort=updated`
+                );
+
+                updateProgress(70, t('loadingClosed'));
+                const myClosedPRs = await fetchWithAuth(
+                    `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:closed+is:unmerged&per_page=50&sort=updated`
+                );
+
+                updateProgress(80, t('processing'));
+
+                // Process only MY PRs
+                allPRs = [
+                    ...myOpenPRs.items.map(pr => ({ ...pr, prState: 'OPEN' })),
+                    ...myMergedPRs.items.map(pr => ({ ...pr, prState: 'MERGED' })),
+                    ...myClosedPRs.items.map(pr => ({ ...pr, prState: 'CLOSED' }))
+                ];
+
+                // Deduplicate by url (more reliable than number across repos)
+                const seen = new Set();
+                allPRs = allPRs.filter(pr => {
+                    if (seen.has(pr.html_url)) return false;
+                    seen.add(pr.html_url);
+                    return true;
+                });
+
+                // Show PRs immediately (without reviews yet)
+                updateProgress(85, t('displaying'));
+                document.getElementById('dashboard').style.display = 'block';
+                renderDashboard();
+
+                // Load reviews and comments (with cache)
+                updateProgress(90, t('loadingReviews'));
+                const cache = getCache();
+                const cacheValid = isCacheValid() && !forceRefreshReviews;
+                let prsToFetch = [];
+                let cacheHits = 0;
+
+                // First pass: apply cache where available (skip old PRs if hidden)
+                for (const pr of allPRs) {
+                    // Skip old PRs if they are hidden
+                    if (!showOldPRs && isOlderThan2Years(pr)) {
+                        continue;
+                    }
+
+                    const cacheKey = pr.html_url;
+                    if (cacheValid && cache.reviews[cacheKey]) {
+                        pr.reviews = cache.reviews[cacheKey];
+                        pr.issueComments = cache.comments[cacheKey] || [];
+                        pr.reviewComments = cache.reviewComments?.[cacheKey] || [];
+                        pr.checks = cache.checks?.[cacheKey] || null;
+                        cacheHits++;
+                    } else {
+                        prsToFetch.push(pr);
+                    }
+                }
+
+                // Show cached data immediately
+                if (cacheHits > 0) {
+                    renderDashboard();
+                    updateProgress(90, t('cached', { hits: cacheHits, toFetch: prsToFetch.length }));
+                }
+
+                // Fetch missing/outdated reviews
+                if (!cache.reviewComments) cache.reviewComments = {};
+                if (!cache.checks) cache.checks = {};
+                for (let i = 0; i < prsToFetch.length; i++) {
+                    try {
+                        const pr = prsToFetch[i];
+                        const repo = getRepoName(pr);
+
+                        // Load reviews, issue comments, review comments, and CI checks in parallel
+                        const [reviews, comments, reviewComments, checkRuns] = await Promise.all([
+                            fetchWithAuth(`${API_BASE}/repos/${repo}/pulls/${pr.number}/reviews`),
+                            fetchWithAuth(`${API_BASE}/repos/${repo}/issues/${pr.number}/comments`),
+                            fetchWithAuth(`${API_BASE}/repos/${repo}/pulls/${pr.number}/comments`),
+                            fetchWithAuth(`${API_BASE}/repos/${repo}/commits/pull/${pr.number}/head/check-runs`).catch(() => null)
+                        ]);
+                        pr.reviews = reviews;
+                        pr.issueComments = comments;
+                        pr.reviewComments = reviewComments;
+                        // Process check runs to get overall status
+                        pr.checks = processCheckRuns(checkRuns);
+
+                        // Save to cache
+                        cache.reviews[pr.html_url] = reviews;
+                        cache.comments[pr.html_url] = comments;
+                        cache.reviewComments[pr.html_url] = reviewComments;
+                        cache.checks[pr.html_url] = pr.checks;
+
+                        // Update display every 5 PRs or at the end
+                        if (i % 5 === 4 || i === prsToFetch.length - 1) {
+                            renderDashboard();
+                            saveCache(cache);
+                        }
+                    } catch (e) {
+                        // Ignore individual errors (rate limiting, etc.)
+                    }
+                    updateProgress(90 + (i / prsToFetch.length) * 10, t('reviews', { current: i + 1, total: prsToFetch.length }));
+                    // Small delay to avoid rate limiting
+                    if (i % 10 === 9) await new Promise(r => setTimeout(r, 300));
+                }
+
+                // Final save
+                if (prsToFetch.length > 0) {
+                    saveCache(cache);
+                }
+
+                forceRefreshReviews = false;
+                updateProgress(100, t('done'));
+                progress.style.display = 'none';
+                updateCacheInfo();
+
+            } catch (error) {
+                alert(t('error') + error.message);
+                console.error(error);
+                progress.style.display = 'none';
+            }
+        }
+
+        function getComponents(pr) {
+            return pr.labels
+                .filter(l => !['Feature', 'Status: Reviewed', 'Bug', 'Deprecation'].includes(l.name))
+                .map(l => l.name);
+        }
+
+        function isApproved(pr) {
+            if (!pr.reviews || pr.reviews.length === 0) return false;
+
+            // Get latest review state per reviewer
+            const reviewerMap = {};
+            pr.reviews.forEach(r => {
+                if (!r.user || r.state === 'COMMENTED' || r.state === 'PENDING') return;
+                reviewerMap[r.user.login] = r.state;
+            });
+
+            const states = Object.values(reviewerMap);
+            // Approved if at least one approval and no changes requested
+            return states.includes('APPROVED') && !states.includes('CHANGES_REQUESTED');
+        }
+
+        function getApprovedStatus(pr) {
+            if (!pr.reviews || pr.reviews.length === 0) return '-';
+
+            // Get unique reviewers by state (keep only latest review per user)
+            const reviewerMap = {};
+            pr.reviews.forEach(r => {
+                if (!r.user || r.state === 'COMMENTED' || r.state === 'PENDING') return;
+                reviewerMap[r.user.login] = {
+                    state: r.state,
+                    login: r.user.login,
+                    avatar: r.user.avatar_url
+                };
+            });
+
+            const approvers = Object.values(reviewerMap).filter(r => r.state === 'APPROVED');
+
+            if (approvers.length === 0) return '-';
+
+            let html = `<span class="review-approved">✅ ${approvers.length}</span> `;
+            approvers.forEach(r => {
+                html += `<span class="reviewer" title="@${r.login}">`;
+                html += `<img src="${r.avatar}&s=36" class="reviewer-avatar" alt="${r.login}">`;
+                html += `</span>`;
+            });
+
+            return html;
+        }
+
+        function getReviewStatus(pr) {
+            const hasReviews = pr.reviews && pr.reviews.length > 0;
+            const hasComments = pr.issueComments && pr.issueComments.length > 0;
+            const hasReviewComments = pr.reviewComments && pr.reviewComments.length > 0;
+
+             if (!hasReviews && !hasComments && !hasReviewComments) return `<span class="review-pending">⏳ ${t('pending')}</span>`;
+
+            // Get unique reviewers by state (keep only latest review per user)
+            const reviewerMap = {};
+            let commentedCount = 0;
+            let lastActivity = null; // {user, time, type}
+
+            // Process reviews
+            if (hasReviews) {
+                pr.reviews.forEach(r => {
+                    if (!r.user) return;
+
+                    const reviewTime = new Date(r.submitted_at || r.created_at);
+                    if (!lastActivity || reviewTime > lastActivity.time) {
+                        lastActivity = {
+                            user: r.user.login,
+                            time: reviewTime,
+                            type: r.state // APPROVED, CHANGES_REQUESTED, COMMENTED, PENDING
+                        };
+                    }
+
+                    if (r.state === 'COMMENTED') {
+                        commentedCount++;
+                    } else if (r.state !== 'PENDING') {
+                        reviewerMap[r.user.login] = {
+                            state: r.state,
+                            login: r.user.login,
+                            avatar: r.user.avatar_url
+                        };
+                    }
+                });
+            }
+
+            // Process issue comments (to find the real last commenter)
+            if (hasComments) {
+                pr.issueComments.forEach(c => {
+                    if (!c.user) return;
+                    const commentTime = new Date(c.created_at);
+                    if (!lastActivity || commentTime > lastActivity.time) {
+                        lastActivity = {
+                            user: c.user.login,
+                            time: commentTime,
+                            type: 'COMMENT'
+                        };
+                    }
+                });
+                commentedCount += pr.issueComments.length;
+            }
+
+            // Process review comments (inline comments and thread replies)
+            if (hasReviewComments) {
+                pr.reviewComments.forEach(c => {
+                    if (!c.user) return;
+                    const commentTime = new Date(c.created_at);
+                    if (!lastActivity || commentTime > lastActivity.time) {
+                        lastActivity = {
+                            user: c.user.login,
+                            time: commentTime,
+                            type: 'COMMENT'
+                        };
+                    }
+                });
+                commentedCount += pr.reviewComments.length;
+            }
+
+            const changesRequested = Object.values(reviewerMap).filter(r => r.state === 'CHANGES_REQUESTED');
+
+            let html = '';
+
+            // Changes requested
+            if (changesRequested.length > 0) {
+                html += `<span class="review-changes">❌ ${changesRequested.length}</span>`;
+                changesRequested.forEach(r => {
+                    html += `<span class="reviewer" title="@${r.login} - Changes requested">`;
+                    html += `<img src="${r.avatar}&s=36" class="reviewer-avatar" style="border-color:#f85149;" alt="${r.login}">`;
+                    html += `</span>`;
+                });
+            }
+
+            // Comments
+            if (commentedCount > 0) {
+                html += ` <span class="review-commented" title="${commentedCount} ${t('comments')}">💬 ${commentedCount}</span>`;
+            }
+
+            // Flag: who needs to respond? (only for open PRs)
+            if (lastActivity && pr.prState === 'OPEN') {
+                const isMeLastActor = lastActivity.user.toLowerCase() === myUsername.toLowerCase();
+                const isMyPR = pr.user.login.toLowerCase() === myUsername.toLowerCase();
+                const lastWasApproval = lastActivity.type === 'APPROVED';
+
+                if (isMyPR) {
+                    if (isMeLastActor) {
+                        // I was the last to comment/act - waiting for reviewer
+                        html += `<span class="their-turn" title="${t('lastCommentMe')}">⏸️ ${t('waiting')}</span>`;
+                    } else if (lastWasApproval) {
+                        // Someone approved - no action needed from me, waiting for merge
+                        html += `<span class="their-turn" title="${t('approvedBy', { user: lastActivity.user })}">✅ ${t('approved')}</span>`;
+                    } else {
+                        // Someone else commented/requested changes - I need to respond
+                        html += `<span class="my-turn" title="${t('lastComment')} @${lastActivity.user}">🎯 ${t('myTurn')}</span>`;
+                    }
+                } else {
+                    if (isMeLastActor) {
+                        html += `<span class="their-turn" title="${t('lastCommentMe')}">⏸️ ${t('waiting')}</span>`;
+                    }
+                }
+            }
+
+            return html || '-';
+        }
+
+        function formatDate(dateStr) {
+            const locales = { en: 'en-GB', fr: 'fr-FR', de: 'de-DE', es: 'es-ES', it: 'it-IT' };
+            return new Date(dateStr).toLocaleDateString(locales[currentLang] || 'en-GB');
+        }
+
+        function processCheckRuns(checkRuns) {
+            if (!checkRuns || !checkRuns.check_runs) return null;
+
+            const runs = checkRuns.check_runs;
+            const total = checkRuns.total_count || runs.length;
+
+            if (total === 0) return { state: 'none', total: 0 };
+
+            const conclusions = runs.map(r => r.conclusion).filter(c => c);
+            const statuses = runs.map(r => r.status);
+
+            // If any are still in progress
+            if (statuses.some(s => s === 'in_progress' || s === 'queued')) {
+                return { state: 'pending', total };
+            }
+
+            // If any failed
+            if (conclusions.some(c => c === 'failure' || c === 'cancelled' || c === 'timed_out')) {
+                return { state: 'failure', total };
+            }
+
+            // All success
+            if (conclusions.every(c => c === 'success' || c === 'skipped' || c === 'neutral')) {
+                return { state: 'success', total };
+            }
+
+            return { state: 'pending', total };
+        }
+
+        function getCIStatus(pr) {
+            if (!pr.checks) return '<span class="checks-pending" title="CI non disponible">⏳</span>';
+
+            const { state, total } = pr.checks;
+
+            if (state === 'success') {
+                return `<span class="checks-pass" title="${total} checks passed">✅</span>`;
+            } else if (state === 'failure') {
+                return `<span class="checks-fail" title="CI failed">❌</span>`;
+            } else if (state === 'pending') {
+                return `<span class="checks-pending" title="CI in progress">🔄</span>`;
+            } else if (state === 'none') {
+                return `<span class="checks-pending" title="No CI">-</span>`;
+            } else {
+                return `<span class="checks-pending" title="${state || 'unknown'}">⏳</span>`;
+            }
+        }
+
+        function getRepoName(pr) {
+            // Extract repo from html_url: https://github.com/owner/repo/pull/123
+            const match = pr.html_url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+            return match ? match[1] : 'unknown';
+        }
+
+        function createTable(prs) {
+            if (prs.length === 0) {
+                return `<p style="text-align:center; padding:40px; color:#8b949e;">${t('noPr')}</p>`;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>${t('thRepo')}</th>
+                        <th>#</th>
+                        <th>${t('thTitle')}</th>
+                        <th>${t('thAuthor')}</th>
+                        <th>${t('thLabels')}</th>
+                        <th>CI</th>
+                        <th>${t('thApproved')}</th>
+                        <th>${t('thReviews')}</th>
+                        <th>${t('thCreated')}</th>
+                        <th>${t('thActivity')}</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            prs.forEach(pr => {
+                const repo = getRepoName(pr);
+                const components = getComponents(pr).map(c =>
+                    `<span class="label label-component">${c}</span>`
+                ).join('');
+
+                const isMine = pr.user.login.toLowerCase() === myUsername.toLowerCase();
+                const mineLabel = isMine ? '<span class="label label-mine">MOI</span> ' : '';
+
+                // Determine row class based on PR state
+                let rowClass = '';
+                if (pr.prState === 'MERGED') {
+                    rowClass = 'pr-merged';
+                } else if (pr.prState === 'CLOSED') {
+                    rowClass = 'pr-closed';
+                } else if (pr.prState === 'OPEN' && isApproved(pr)) {
+                    rowClass = 'pr-approved';
+                }
+
+                html += `<tr class="${rowClass}" data-search="${pr.title.toLowerCase()} ${pr.user.login.toLowerCase()} ${repo.toLowerCase()} ${getComponents(pr).join(' ').toLowerCase()}">
+                    <td><span class="label" style="background:#30363d;">${repo.split('/')[1] || repo}</span></td>
+                    <td><a href="${pr.html_url}" target="_blank" class="pr-number">#${pr.number}</a></td>
+                    <td class="title-cell">${mineLabel}<a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a></td>
+                    <td class="author">@${pr.user.login}</td>
+                    <td>${components}</td>
+                    <td class="status">${getCIStatus(pr)}</td>
+                    <td>${getApprovedStatus(pr)}</td>
+                    <td>${getReviewStatus(pr)}</td>
+                    <td class="date">${formatDate(pr.created_at)}</td>
+                    <td class="date">${formatDate(pr.updated_at)}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        let currentRepoFilter = 'all';
+
+        function getUniqueRepos() {
+            const repos = {};
+            getFilteredPRs().forEach(pr => {
+                const repo = getRepoName(pr);
+                repos[repo] = (repos[repo] || 0) + 1;
+            });
+            return Object.entries(repos).sort((a, b) => b[1] - a[1]);
+        }
+
+        function renderRepoFilter() {
+            const filteredPRs = getFilteredPRs();
+            const repos = getUniqueRepos();
+            const container = document.getElementById('repoFilter');
+            container.innerHTML = `<span class="repo-filter-label">${t('filterByRepo')}</span>`;
+
+            // Add "All" button
+            const totalCount = filteredPRs.length;
+            container.innerHTML += `<button class="repo-btn ${currentRepoFilter === 'all' ? 'active' : ''}" data-repo="all">${t('all')} <span class="repo-count">${totalCount}</span></button>`;
+
+            // Add repo buttons
+            repos.forEach(([repo, count]) => {
+                const shortName = repo.split('/')[1] || repo;
+                const isActive = currentRepoFilter === repo ? 'active' : '';
+                container.innerHTML += `<button class="repo-btn ${isActive}" data-repo="${repo}">${shortName} <span class="repo-count">${count}</span></button>`;
+            });
+
+            // Add click handlers
+            container.querySelectorAll('.repo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentRepoFilter = btn.dataset.repo;
+                    renderRepoFilter();
+                    renderDashboard();
+                });
+            });
+        }
+
+        function filterByRepo(prs) {
+            if (currentRepoFilter === 'all') return prs;
+            return prs.filter(pr => getRepoName(pr) === currentRepoFilter);
+        }
+
+        function renderDashboard() {
+            // Render repo filter buttons
+            renderRepoFilter();
+
+            // Apply filters: repo + old PRs toggle
+            const filteredPRs = filterByRepo(getFilteredPRs());
+
+            const minePRs = filteredPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
+            const openPRs = filteredPRs.filter(pr => pr.prState === 'OPEN');
+            const mergedPRs = filteredPRs.filter(pr => pr.prState === 'MERGED');
+            const closedPRs = filteredPRs.filter(pr => pr.prState === 'CLOSED');
+
+            // Update counts
+            document.getElementById('count-mine').textContent = minePRs.length;
+            document.getElementById('count-open').textContent = openPRs.length;
+            document.getElementById('count-merged').textContent = mergedPRs.length;
+            document.getElementById('count-closed').textContent = closedPRs.length;
+            document.getElementById('tab-count-mine').textContent = minePRs.length;
+            document.getElementById('tab-count-open').textContent = openPRs.length;
+            document.getElementById('tab-count-merged').textContent = mergedPRs.length;
+            document.getElementById('tab-count-closed').textContent = closedPRs.length;
+
+            // Render tables
+            document.getElementById('content-mine').innerHTML = createTable(minePRs);
+            document.getElementById('content-open').innerHTML = createTable(openPRs);
+            document.getElementById('content-merged').innerHTML = createTable(mergedPRs);
+            document.getElementById('content-closed').innerHTML = createTable(closedPRs);
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('content-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const searchText = row.dataset.search || '';
+                row.style.display = searchText.includes(query) ? '' : 'none';
+            });
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', (e) => {
+            const credentialsModal = document.getElementById('credentialsModal');
+            const settingsModal = document.getElementById('settingsModal');
+            const helpModal = document.getElementById('helpModal');
+            if (e.target === credentialsModal && loadCredentials()) {
+                hideModal();
+            }
+            if (e.target === settingsModal) {
+                hideSettingsModal();
+            }
+            if (e.target === helpModal) {
+                hideHelpModal();
+            }
+        });
+
+        // Handle Enter/Escape keys in modals
+        document.addEventListener('keydown', (e) => {
+            const credentialsModal = document.getElementById('credentialsModal');
+            const settingsModal = document.getElementById('settingsModal');
+            const helpModal = document.getElementById('helpModal');
+
+            if (credentialsModal.style.display === 'flex') {
+                if (e.key === 'Enter') saveCredentials();
+                if (e.key === 'Escape' && loadCredentials()) hideModal();
+            }
+            if (settingsModal.style.display === 'flex' && e.key === 'Escape') {
+                hideSettingsModal();
+            }
+            if (helpModal.style.display === 'flex' && e.key === 'Escape') {
+                hideHelpModal();
+            }
+        });
+
+        // Auto-load on page ready
+        window.addEventListener('load', () => {
+            // Apply translations first
+            applyTranslations();
+
+            // Initialize switch state from localStorage
+            document.getElementById('showOldPRs').checked = showOldPRs;
+            updateCacheInfo();
+            updateConfigDisplay();
+
+            // Load data only if credentials exist
+            if (loadCredentials()) {
+                loadData();
+            }
+        });
+    </script>
+</body>
+</html>
