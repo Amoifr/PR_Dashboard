@@ -418,14 +418,16 @@
             </div>
 
             <div class="tabs">
-                <button class="tab active" data-tab="mine"><span data-i18n="myPrs">My PRs</span> <span class="count" id="tab-count-mine">0</span></button>
-                <button class="tab" data-tab="open">Open <span class="count" id="tab-count-open">0</span></button>
-                <button class="tab" data-tab="merged">Merged <span class="count" id="tab-count-merged">0</span></button>
-                <button class="tab" data-tab="closed">Closed <span class="count" id="tab-count-closed">0</span></button>
+                <button class="tab active" data-tab="mine">📋 <span data-i18n="myPrs">My PRs</span> <span class="count" id="tab-count-mine">0</span></button>
+                <button class="tab" data-tab="open">🔓 Open <span class="count" id="tab-count-open">0</span></button>
+                <button class="tab" data-tab="approved">✅ Approved <span class="count" id="tab-count-approved">0</span></button>
+                <button class="tab" data-tab="merged">🔀 Merged <span class="count" id="tab-count-merged">0</span></button>
+                <button class="tab" data-tab="closed">🚫 Closed <span class="count" id="tab-count-closed">0</span></button>
             </div>
 
             <div id="content-mine" class="tab-content active"><div class="loading">Chargement</div></div>
             <div id="content-open" class="tab-content"><div class="loading">Chargement</div></div>
+            <div id="content-approved" class="tab-content"><div class="loading">Chargement</div></div>
             <div id="content-merged" class="tab-content"><div class="loading">Chargement</div></div>
             <div id="content-closed" class="tab-content"><div class="loading">Chargement</div></div>
         </div>
@@ -442,6 +444,23 @@
         const TOKEN_KEY = 'pr_dashboard_token';
         const USERNAME_KEY = 'pr_dashboard_username';
         const LANG_KEY = 'pr_dashboard_lang';
+
+        // Bots to ignore when determining who needs to respond
+        const IGNORED_BOTS = [
+            'ps-jarvis',           // PrestaShop bot
+            'dependabot',          // GitHub Dependabot
+            'dependabot[bot]',     // GitHub Dependabot (bot format)
+            'github-actions',      // GitHub Actions
+            'github-actions[bot]', // GitHub Actions (bot format)
+            'codecov',             // Codecov
+            'codecov[bot]',        // Codecov (bot format)
+            'sonarcloud',          // SonarCloud
+            'sonarcloud[bot]',     // SonarCloud (bot format)
+            'stale',               // Stale bot
+            'stale[bot]',          // Stale bot (bot format)
+            'renovate',            // Renovate
+            'renovate[bot]',       // Renovate (bot format)
+        ];
 
         // Translations
         const translations = {
@@ -1304,12 +1323,16 @@
                 });
             }
 
+            // Helper to check if a user is a bot
+            const isBot = (login) => IGNORED_BOTS.some(bot => login.toLowerCase() === bot.toLowerCase());
+
             // Process issue comments (to find the real last commenter)
             if (hasComments) {
                 pr.issueComments.forEach(c => {
                     if (!c.user) return;
                     const commentTime = new Date(c.created_at);
-                    if (!lastActivity || commentTime > lastActivity.time) {
+                    // Only consider non-bot comments for lastActivity
+                    if (!isBot(c.user.login) && (!lastActivity || commentTime > lastActivity.time)) {
                         lastActivity = {
                             user: c.user.login,
                             time: commentTime,
@@ -1317,6 +1340,7 @@
                         };
                     }
                 });
+                // Count all comments (including bots) for the comment counter
                 commentedCount += pr.issueComments.length;
             }
 
@@ -1325,7 +1349,8 @@
                 pr.reviewComments.forEach(c => {
                     if (!c.user) return;
                     const commentTime = new Date(c.created_at);
-                    if (!lastActivity || commentTime > lastActivity.time) {
+                    // Only consider non-bot comments for lastActivity
+                    if (!isBot(c.user.login) && (!lastActivity || commentTime > lastActivity.time)) {
                         lastActivity = {
                             user: c.user.login,
                             time: commentTime,
@@ -1333,6 +1358,7 @@
                         };
                     }
                 });
+                // Count all comments (including bots) for the comment counter
                 commentedCount += pr.reviewComments.length;
             }
 
@@ -1551,6 +1577,10 @@
 
             const minePRs = filteredPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
             const openPRs = filteredPRs.filter(pr => pr.prState === 'OPEN');
+            const approvedPRs = openPRs.filter(pr => {
+                if (!pr.reviews || !Array.isArray(pr.reviews)) return false;
+                return pr.reviews.some(r => r.state === 'APPROVED');
+            });
             const mergedPRs = filteredPRs.filter(pr => pr.prState === 'MERGED');
             const closedPRs = filteredPRs.filter(pr => pr.prState === 'CLOSED');
 
@@ -1561,12 +1591,14 @@
             document.getElementById('count-closed').textContent = closedPRs.length;
             document.getElementById('tab-count-mine').textContent = minePRs.length;
             document.getElementById('tab-count-open').textContent = openPRs.length;
+            document.getElementById('tab-count-approved').textContent = approvedPRs.length;
             document.getElementById('tab-count-merged').textContent = mergedPRs.length;
             document.getElementById('tab-count-closed').textContent = closedPRs.length;
 
             // Render tables
             document.getElementById('content-mine').innerHTML = createTable(minePRs);
             document.getElementById('content-open').innerHTML = createTable(openPRs);
+            document.getElementById('content-approved').innerHTML = createTable(approvedPRs);
             document.getElementById('content-merged').innerHTML = createTable(mergedPRs);
             document.getElementById('content-closed').innerHTML = createTable(closedPRs);
         }
