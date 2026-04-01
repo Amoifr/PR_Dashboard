@@ -317,6 +317,108 @@
             0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
+
+        /* ========== RESPONSIVE ========== */
+
+        /* Tablet - 1024px */
+        @media (max-width: 1024px) {
+            .stats-container { flex-wrap: wrap; }
+            .stats { flex: 1 1 100%; order: 1; }
+            .donut-container { flex: 1 1 calc(50% - 10px); min-width: 280px; order: 2; }
+            .badges-container { flex: 1 1 calc(50% - 10px); min-width: 240px; order: 3; }
+            .header-actions { gap: 12px; }
+        }
+
+        /* Mobile landscape / small tablet - 768px */
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+
+            .header-row { flex-direction: column; align-items: stretch; gap: 15px; }
+            .header-actions { flex-wrap: wrap; justify-content: flex-start; gap: 10px; }
+
+            .stats-container { flex-direction: column; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .donut-container, .badges-container { flex: 1 1 100%; min-width: unset; }
+
+            .tabs { flex-wrap: wrap; gap: 5px; }
+            .tab { padding: 10px 12px; font-size: 13px; flex: 1 1 auto; min-width: fit-content; }
+            .tab .count { padding: 1px 6px; font-size: 11px; }
+
+            .token-section input { width: 100%; max-width: 400px; }
+            .token-section button { margin-left: 0; margin-top: 10px; }
+
+            .modal { padding: 20px; width: 95%; }
+            .help-modal { max-height: 70vh; }
+
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+            .title-cell { max-width: 250px; }
+            .title-cell a { white-space: normal; }
+
+            h1 { font-size: 1.4rem; }
+            h1 svg { width: 26px; height: 26px; }
+
+            .switch-container { order: 1; }
+            .lang-selector { order: 2; }
+            .refresh-btn-group { order: 3; }
+        }
+
+        /* Mobile portrait - 480px */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+
+            .stats { grid-template-columns: 1fr; gap: 10px; }
+            .stat-card { padding: 15px; }
+            .stat-value { font-size: 26px; }
+
+            .tabs { border-bottom: none; gap: 8px; }
+            .tab { padding: 8px 10px; font-size: 12px; border-radius: 6px; background: #21262d; border: 1px solid #30363d; }
+            .tab.active { background: #388bfd33; border-color: #58a6ff; }
+
+            .header-actions { gap: 8px; }
+            .refresh-btn, .lang-btn, .header-icon-btn { padding: 6px 10px; font-size: 12px; }
+            .header-icon-btn { width: 32px; height: 32px; }
+            .refresh-btn svg, .header-icon-btn svg { width: 14px; height: 14px; }
+
+            .switch-label { font-size: 11px; }
+            .switch { width: 38px; height: 20px; }
+            .slider:before { height: 14px; width: 14px; }
+            input:checked + .slider:before { transform: translateX(18px); }
+
+            .search-bar input { padding: 8px 12px; font-size: 13px; }
+
+            .repo-filter { gap: 6px; }
+            .repo-btn { padding: 4px 10px; font-size: 11px; }
+
+            .donut-chart-wrapper { width: 160px; height: 160px; }
+            .badges-list { max-height: 200px; }
+            .badge-item { padding: 6px 10px; }
+            .badge-medal { font-size: 20px; }
+
+            th, td { padding: 8px 6px; font-size: 12px; }
+            .title-cell { max-width: 180px; }
+
+            .credentials-display { flex-direction: column; align-items: flex-start; }
+
+            h1 { font-size: 1.2rem; flex-wrap: wrap; }
+            .subtitle { font-size: 13px; }
+
+            .modal { padding: 15px; }
+            .modal h3 { font-size: 16px; }
+            .modal input { padding: 8px 10px; font-size: 13px; }
+            .modal .btn-primary { padding: 10px; }
+        }
+
+        /* Very small screens - 360px */
+        @media (max-width: 360px) {
+            .tabs { justify-content: center; }
+            .tab { flex: 1 1 45%; text-align: center; }
+
+            .header-actions { justify-content: center; }
+
+            .stat-card { padding: 12px; }
+            .stat-value { font-size: 22px; }
+            .stat-label { font-size: 11px; }
+        }
     </style>
 </head>
 <body>
