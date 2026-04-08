@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Finder</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/issue.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <div>
+                <h1>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg>
+                    Issue Finder
+                </h1>
+                <p class="subtitle" data-i18n="issueSubtitle">Find mature open-source issues to contribute to</p>
+            </div>
+            <div class="header-actions">
+                <a href="index.html" class="header-icon-btn" title="PR Dashboard">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"></path></svg>
+                </a>
+                <button class="header-icon-btn" onclick="showHelpModal()" title="Help">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.196l-.108.061a.75.75 0 0 1-.75-1.299c.068-.039.128-.074.18-.106l.127-.073c.174-.116.286-.213.367-.323.073-.107.128-.245.128-.439 0-.329-.18-.587-.413-.748A1.3 1.3 0 0 0 8 5.5c-.373 0-.634.089-.824.206-.177.109-.309.261-.398.436a.749.749 0 0 1-1.042.332l-.083-.057ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+                </button>
+                <button class="header-icon-btn" id="settingsBtn" onclick="showSettingsModal()" title="Settings">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.04.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.04-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"></path></svg>
+                </button>
+                <div class="lang-selector">
+                    <button class="lang-btn" onclick="toggleLangDropdown()">
+                        <span class="flag" id="currentFlag">🇬🇧</span>
+                        <span id="currentLang">EN</span>
+                    </button>
+                    <div class="lang-dropdown" id="langDropdown">
+                        <div class="lang-option" data-lang="en"><span class="flag">🇬🇧</span> English</div>
+                        <div class="lang-option" data-lang="fr"><span class="flag">🇫🇷</span> Français</div>
+                        <div class="lang-option" data-lang="de"><span class="flag">🇩🇪</span> Deutsch</div>
+                        <div class="lang-option" data-lang="es"><span class="flag">🇪🇸</span> Español</div>
+                        <div class="lang-option" data-lang="it"><span class="flag">🇮🇹</span> Italiano</div>
+                    </div>
+                </div>
+                <div>
+                    <button class="refresh-btn-simple" id="refreshBtn" onclick="refreshAll()">
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z"></path></svg>
+                        <span data-i18n="refresh">Refresh</span>
+                    </button>
+                    <div class="cache-info" id="cacheInfo"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="modal-overlay" id="helpModal" style="display: none;">
+            <div class="modal help-modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.196l-.108.061a.75.75 0 0 1-.75-1.299c.068-.039.128-.074.18-.106l.127-.073c.174-.116.286-.213.367-.323.073-.107.128-.245.128-.439 0-.329-.18-.587-.413-.748A1.3 1.3 0 0 0 8 5.5c-.373 0-.634.089-.824.206-.177.109-.309.261-.398.436a.749.749 0 0 1-1.042.332l-.083-.057ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>
+                    <span data-i18n="helpModalTitle">How does scoring work?</span>
+                </h3>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path></svg><span data-i18n="helpIssueScoring">Issue Scoring</span></h4>
+                    <p data-i18n="helpIssueScoringDesc">Issues are scored based on maturity: +3 for "good first issue"/"help wanted" labels, +2 for maintainer comments, +1 for active discussion, +1 for detailed description, +1 for recent activity. Issues with 10+ comments get -1, old inactive issues get -2.</p>
+                </div>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.5 7a4.499 4.499 0 1 1-8.998 0A4.499 4.499 0 0 1 11.5 7Zm-.82 4.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04Z"></path></svg><span data-i18n="helpIssueFiltering">Filtering</span></h4>
+                    <p data-i18n="helpIssueFilteringDesc">Assigned issues, your own issues, issues with linked PRs, and issues without maintainer validation are automatically excluded.</p>
+                </div>
+                <div class="help-feature">
+                    <h4><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"></path></svg><span data-i18n="helpIssueRepos">Repository Discovery</span></h4>
+                    <p data-i18n="helpIssueReposDesc">Repos are auto-discovered from your merged PRs. You can also add repos manually. Results are cached locally until you refresh.</p>
+                </div>
+                <button class="btn-primary" onclick="hideHelpModal()" data-i18n="helpClose">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal-overlay" id="settingsModal" style="display: none;">
+            <div class="modal settings-modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.04.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.04-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"></path></svg>
+                    <span data-i18n="settings">Settings</span>
+                </h3>
+                <div class="settings-info">
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="user">User</span>
+                        <span class="info-value" id="settingsUsername">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Token</span>
+                        <span class="info-value">••••••••</span>
+                    </div>
+                </div>
+                <div class="settings-actions">
+                    <button class="btn-edit" onclick="hideSettingsModal(); showModal();" data-i18n="edit">Edit</button>
+                    <button class="btn-delete" onclick="clearCredentials()" data-i18n="delete">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credentials Modal -->
+        <div class="modal-overlay" id="credentialsModal" style="display: none;">
+            <div class="modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path></svg>
+                    <span data-i18n="modalTitle">GitHub Configuration</span>
+                </h3>
+                <div class="input-group">
+                    <label for="usernameInput" data-i18n="usernameLabel">GitHub Username</label>
+                    <input type="text" id="usernameInput" data-i18n-placeholder="usernamePlaceholder" placeholder="e.g.: Amoifr">
+                </div>
+                <div class="input-group">
+                    <label for="tokenInput" data-i18n="tokenLabel">GitHub Token (Personal Access Token)</label>
+                    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <button class="btn-primary" onclick="saveCredentials()" data-i18n="save">Save</button>
+
+                <div class="security-notice">
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm9.78-2.22-5.5 5.5a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l5.5-5.5a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path></svg>
+                    <p>
+                        <strong data-i18n="securityTitle">100% local and secure</strong><br>
+                        <span data-i18n="securityText">Your credentials are stored only in YOUR browser's localStorage.</span>
+                    </p>
+                </div>
+
+                <div class="help-section">
+                    <h4>
+                        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>
+                        <span data-i18n="helpTitle">How to generate a token?</span>
+                    </h4>
+                    <p data-i18n="helpStep1">1. Go to <a href="https://github.com/settings/tokens?type=beta" target="_blank">GitHub Settings > Tokens</a></p>
+                    <p data-i18n="helpStep2">2. Click on <strong>"Generate new token"</strong></p>
+                    <p data-i18n="helpStep3">3. Configure the token:</p>
+                    <ul>
+                        <li data-i18n="helpTokenName"><strong>Token name:</strong> e.g.: "PR Dashboard"</li>
+                        <li data-i18n="helpExpiration"><strong>Expiration:</strong> according to your preference</li>
+                        <li data-i18n="helpRepoAccess"><strong>Repository access:</strong> "All repositories" or select your repos</li>
+                    </ul>
+                    <p data-i18n="helpStep4">4. In <strong>"Permissions"</strong>, enable:</p>
+                    <ul>
+                        <li><code>Pull requests</code> &rarr; <strong>Read-only</strong></li>
+                        <li><code>Issues</code> &rarr; <strong>Read-only</strong></li>
+                        <li data-i18n="helpMetadata"><code>Metadata</code> &rarr; <strong>Read-only</strong></li>
+                    </ul>
+                    <p data-i18n="helpStep5">5. Click <strong>"Generate token"</strong> and paste it here.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Repo Management Section -->
+        <div class="token-section" id="repoManager">
+            <h3 data-i18n="trackedRepos">Tracked Repositories</h3>
+            <p class="token-hint" data-i18n="repoHint">Repos where you contributed are auto-discovered. You can also add repos manually.</p>
+            <div id="repoChips" class="repo-chips"></div>
+            <div class="add-repo-group">
+                <input type="text" id="addRepoInput" data-i18n-placeholder="addRepoPlaceholder" placeholder="owner/repo">
+                <button onclick="addManualRepo()" data-i18n="addRepo">Add</button>
+                <button class="btn-secondary" onclick="discoverRepos()" data-i18n="discoverRepos">Auto-discover from my PRs</button>
+                <button class="btn-secondary" onclick="cleanupStaleNotes()" title="Clean notes on closed issues or issues with linked PRs" data-i18n="cleanNotes">Clean stale notes</button>
+            </div>
+        </div>
+
+        <!-- Comment Modal -->
+        <div class="modal-overlay" id="commentModal" style="display: none;">
+            <div class="modal comment-modal">
+                <h3>
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>
+                    <span data-i18n="commentModalTitle">Personal note</span>
+                </h3>
+                <div class="comment-issue-info">
+                    <span class="comment-issue-ref" id="commentIssueRef"></span>
+                    <span class="comment-issue-title" id="commentIssueTitle"></span>
+                </div>
+                <textarea id="commentText" rows="6" data-i18n-placeholder="commentPlaceholder" placeholder="Write your note about this issue..."></textarea>
+                <div class="comment-actions">
+                    <button class="btn-primary" id="commentSendBtn" onclick="sendComment()" data-i18n="commentSend">Save</button>
+                    <button class="btn-edit" onclick="closeCommentModal()" data-i18n="commentCancel">Cancel</button>
+                    <button class="btn-delete" id="commentDeleteBtn" onclick="deleteComment()" style="display: none;" data-i18n="commentDelete">Delete note</button>
+                </div>
+                <div class="comment-error" id="commentError" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Loading overlay -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+            <div class="loading-card">
+                <div class="loading-spinner"></div>
+                <div class="loading-title" id="loadingTitle" data-i18n="loading">Loading...</div>
+                <div class="progress" id="progress">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                </div>
+                <div class="loading-detail" id="progressText"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" style="display: none;">
+            <div class="stats-container">
+                <div class="stats stats-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="countRepos">0</div>
+                        <div class="stat-label" data-i18n="statRepos">Repos Scanned</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="countIssues">0</div>
+                        <div class="stat-label" data-i18n="statIssues">Issues Analyzed</div>
+                    </div>
+                    <div class="stat-card open qualified">
+                        <div class="stat-value" id="countQualified">0</div>
+                        <div class="stat-label" data-i18n="statQualified">Qualified</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="repo-filter" id="repoFilter"></div>
+
+            <div class="search-bar">
+                <input type="text" id="search" data-i18n-placeholder="issueSearchPlaceholder" placeholder="Search by title, repo, or label...">
+            </div>
+
+            <div id="issuesTable"></div>
+        </div>
+
+        <!-- My Notes (always visible if notes exist) -->
+        <div id="notesSection" style="display: none;">
+            <div class="token-section">
+                <h3 data-i18n="myNotes">My Notes</h3>
+                <div id="notesList"></div>
+            </div>
+        </div>
+
+        <p class="generated" data-i18n="generated"><a href="https://github.com/Amoifr" target="_blank">Amoifr - Pascal CESCON</a></p>
+    </div>
+
+    <script src="assets/js/i18n/i18n-common.js"></script>
+    <script src="assets/js/i18n/i18n-issue.js"></script>
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/issue.js"></script>
+</body>
+</html>

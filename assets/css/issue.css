@@ -1,0 +1,285 @@
+/* ========== ISSUE FINDER — Page-specific styles ========== */
+
+/* Loading overlay */
+.loading-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+.loading-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #30363d;
+    border-top-color: #58a6ff;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.loading-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 16px;
+}
+.loading-card .progress {
+    margin: 0 0 12px;
+}
+.loading-card .progress-bar {
+    height: 6px;
+    border-radius: 3px;
+}
+.loading-detail {
+    font-size: 13px;
+    color: #8b949e;
+    min-height: 18px;
+}
+
+/* Comment modal */
+.comment-modal { max-width: 520px; }
+.comment-issue-info {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 15px;
+}
+.comment-issue-ref { color: #58a6ff; font-weight: 600; margin-right: 8px; }
+.comment-issue-title { color: #8b949e; font-size: 13px; }
+.comment-modal textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: #0d1117;
+    color: #c9d1d9;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    resize: vertical;
+    min-height: 120px;
+}
+.comment-modal textarea:focus {
+    outline: none;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3);
+}
+.comment-actions { display: flex; gap: 10px; margin-top: 15px; }
+.comment-actions button { padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.comment-actions .btn-delete { margin-left: auto; }
+.comment-error { color: #f85149; font-size: 12px; margin-top: 10px; }
+
+/* Comment button in table */
+.comment-issue-btn {
+    background: none;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #8b949e;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+.comment-issue-btn:hover { background: #21262d; color: #58a6ff; border-color: #58a6ff; }
+.comment-issue-btn.has-note { color: #58a6ff; border-color: #58a6ff; background: rgba(56, 139, 253, 0.15); }
+.comment-issue-btn.has-note:hover { background: rgba(56, 139, 253, 0.25); }
+.comment-issue-btn svg { width: 14px; height: 14px; }
+
+/* Actions cell */
+.actions-cell { white-space: nowrap; display: flex; gap: 4px; }
+
+/* Notes section */
+.note-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-left: 3px solid #58a6ff;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+}
+.note-card.note-orphan {
+    border-left-color: #d29922;
+    opacity: 0.85;
+}
+.note-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.note-ref {
+    color: #58a6ff;
+    font-weight: 600;
+    font-size: 13px;
+}
+.note-orphan-badge {
+    font-size: 11px;
+    color: #d29922;
+    background: rgba(210, 153, 34, 0.15);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+.note-date {
+    font-size: 11px;
+    color: #6e7681;
+}
+.note-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+}
+.note-body {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Score badge */
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 16px;
+    border: 2px solid;
+}
+.score-high { color: #3fb950; border-color: #3fb950; background: rgba(63, 185, 80, 0.15); }
+.score-medium { color: #d29922; border-color: #d29922; background: rgba(210, 153, 34, 0.15); }
+.score-low { color: #8b949e; border-color: #8b949e; background: rgba(139, 148, 158, 0.15); }
+
+/* Repo chips */
+.repo-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.repo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #c9d1d9;
+    transition: all 0.2s;
+}
+.repo-chip.discovered { border-color: #388bfd33; }
+.repo-chip.manual { border-color: #238636; }
+.repo-chip .remove-chip {
+    background: none;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+}
+.repo-chip .remove-chip:hover { color: #f85149; }
+
+/* Add repo input group */
+.add-repo-group { display: flex; gap: 10px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.add-repo-group input {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: #0d1117;
+    color: #c9d1d9;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.add-repo-group input:focus {
+    outline: none;
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3);
+}
+
+/* Issue labels with GitHub colors */
+.issue-label {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 1px 2px;
+    border: 1px solid transparent;
+}
+
+/* Issue title cell */
+.issue-title-cell { max-width: 400px; }
+.issue-title-cell a { display: block; }
+.issue-number { font-weight: 600; color: #58a6ff; }
+.issue-title { color: #c9d1d9; }
+
+/* Refresh per issue button */
+.refresh-issue-btn {
+    background: none;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #8b949e;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+.refresh-issue-btn:hover { background: #21262d; color: #c9d1d9; border-color: #8b949e; }
+.refresh-issue-btn:disabled { cursor: wait; opacity: 0.5; }
+.refresh-issue-btn svg { width: 14px; height: 14px; }
+
+/* Stat card specific */
+.stat-card.qualified .stat-value { color: #58a6ff; }
+.stat-card.qualified { border-left: 3px solid #58a6ff; }
+
+/* Stats with 3 columns */
+.stats-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #8b949e;
+}
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 15px; color: #30363d; }
+.empty-state h3 { color: #c9d1d9; margin-bottom: 10px; }
+.empty-state p { font-size: 14px; }
+
+/* Row highlight for good-first-issue */
+tr.good-first-issue { border-left: 3px solid #3fb950; }
+
+/* ========== RESPONSIVE — page-specific ========== */
+@media (max-width: 768px) {
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+    .issue-title-cell { max-width: 250px; }
+    .issue-title-cell a { white-space: normal; }
+    .add-repo-group input { width: 100%; }
+    .stats-3 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .issue-title-cell { max-width: 180px; }
+    .score-badge { width: 30px; height: 30px; font-size: 13px; }
+    .add-repo-group { flex-direction: column; align-items: stretch; }
+    .add-repo-group input { width: 100%; }
+}
