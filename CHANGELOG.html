@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog — PR Dashboard</title>
+    <link rel="stylesheet" href="assets/css/common.css">
+    <style>
+        .changelog { max-width: 800px; margin: 0 auto; }
+        .version { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+        .version-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+        .version-tag { font-size: 22px; font-weight: 700; color: #58a6ff; }
+        .version-date { font-size: 13px; color: #6e7681; }
+        .version-label { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+        .version-label.latest { background: rgba(63, 185, 80, 0.2); color: #3fb950; }
+        .change-category { margin-bottom: 12px; }
+        .change-category h4 { font-size: 13px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .change-category ul { list-style: none; padding: 0; margin: 0; }
+        .change-category li { padding: 4px 0; font-size: 14px; color: #c9d1d9; display: flex; align-items: flex-start; gap: 8px; }
+        .change-category li::before { content: ''; display: none; }
+        .change-icon { font-size: 12px; margin-top: 3px; flex-shrink: 0; }
+        .change-icon.added { color: #3fb950; }
+        .change-icon.changed { color: #d29922; }
+        .change-icon.fixed { color: #58a6ff; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: #58a6ff; font-size: 14px; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+        .back-link svg { width: 16px; height: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container changelog">
+        <a href="index.html" class="back-link">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M7.78 12.53a.75.75 0 0 1-1.06 0L2.47 8.28a.75.75 0 0 1 0-1.06l4.25-4.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L4.81 7h7.44a.75.75 0 0 1 0 1.5H4.81l2.97 2.97a.75.75 0 0 1 0 1.06Z"></path></svg>
+            PR Dashboard
+        </a>
+
+        <h1>
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>
+            Changelog
+        </h1>
+        <p class="subtitle">All notable changes to this project.</p>
+
+        <div class="version">
+            <div class="version-header">
+                <span class="version-tag">v2.0.0</span>
+                <span class="version-date">2026-04-08</span>
+                <span class="version-label latest">Latest</span>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon added">+</span> Added</h4>
+                <ul>
+                    <li><span class="change-icon added">+</span> Issue Finder page — find mature open-source issues to contribute to</li>
+                    <li><span class="change-icon added">+</span> Issue scoring algorithm based on maturity (labels, maintainer validation, activity, description)</li>
+                    <li><span class="change-icon added">+</span> Auto-discovery of repos from your merged PRs</li>
+                    <li><span class="change-icon added">+</span> Manual repo management with localStorage persistence</li>
+                    <li><span class="change-icon added">+</span> Personal notes on issues stored in localStorage</li>
+                    <li><span class="change-icon added">+</span> Loading overlay with progress phases and animated spinner</li>
+                    <li><span class="change-icon added">+</span> Stale notes cleanup (removes notes on closed issues or issues with linked PRs)</li>
+                    <li><span class="change-icon added">+</span> Per-issue refresh button</li>
+                    <li><span class="change-icon added">+</span> Navigation links between PR Dashboard and Issue Finder</li>
+                    <li><span class="change-icon added">+</span> Changelog page</li>
+                </ul>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon changed">~</span> Changed</h4>
+                <ul>
+                    <li><span class="change-icon changed">~</span> Extracted all inline CSS/JS from index.html into separate files</li>
+                    <li><span class="change-icon changed">~</span> Reorganized project into assets/css and assets/js directory structure</li>
+                    <li><span class="change-icon changed">~</span> Shared styles and logic (modals, i18n, auth, API) mutualized in common files</li>
+                    <li><span class="change-icon changed">~</span> Translations moved to dedicated i18n/ files</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="version">
+            <div class="version-header">
+                <span class="version-tag">v1.5.0</span>
+                <span class="version-date">2026-04-07</span>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon added">+</span> Added</h4>
+                <ul>
+                    <li><span class="change-icon added">+</span> Responsive design with media queries (tablet, mobile, small screens)</li>
+                    <li><span class="change-icon added">+</span> Contribution badges column with medal tiers (Bronze to Legendary)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="version">
+            <div class="version-header">
+                <span class="version-tag">v1.4.0</span>
+                <span class="version-date">2026-04-06</span>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon added">+</span> Added</h4>
+                <ul>
+                    <li><span class="change-icon added">+</span> Celebration feature — confetti and modal when PRs get approved or merged</li>
+                </ul>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon fixed">*</span> Fixed</h4>
+                <ul>
+                    <li><span class="change-icon fixed">*</span> Cache validation now requires comments to be present</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="version">
+            <div class="version-header">
+                <span class="version-tag">v1.3.0</span>
+                <span class="version-date">2026-04-05</span>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon added">+</span> Added</h4>
+                <ul>
+                    <li><span class="change-icon added">+</span> Nested donut chart (status + repo distribution)</li>
+                    <li><span class="change-icon added">+</span> KPI evolution indicators (day/week/month trends)</li>
+                </ul>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon changed">~</span> Changed</h4>
+                <ul>
+                    <li><span class="change-icon changed">~</span> Optimized review loading for merged/closed PRs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="version">
+            <div class="version-header">
+                <span class="version-tag">v1.2.0</span>
+                <span class="version-date">2026-04-04</span>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon added">+</span> Added</h4>
+                <ul>
+                    <li><span class="change-icon added">+</span> Bot filtering for review detection (Dependabot, Codecov, etc.)</li>
+                    <li><span class="change-icon added">+</span> Approved tab</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="version">
+            <div class="version-header">
+                <span class="version-tag">v1.0.0</span>
+                <span class="version-date">2026-04-03</span>
+            </div>
+            <div class="change-category">
+                <h4><span class="change-icon added">+</span> Added</h4>
+                <ul>
+                    <li><span class="change-icon added">+</span> Initial PR Dashboard — view all your PRs across GitHub repos</li>
+                    <li><span class="change-icon added">+</span> Review status tracking with "My turn" / "Their turn" badges</li>
+                    <li><span class="change-icon added">+</span> Cache system (4h TTL) with manual refresh</li>
+                    <li><span class="change-icon added">+</span> Repository filter and search</li>
+                    <li><span class="change-icon added">+</span> Old PRs filter (&gt; 2 years)</li>
+                    <li><span class="change-icon added">+</span> 5-language support (EN, FR, DE, ES, IT)</li>
+                    <li><span class="change-icon added">+</span> 100% client-side — token stored in localStorage only</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="generated"><a href="https://github.com/Amoifr" target="_blank">Amoifr - Pascal CESCON</a> — v2.0.0</p>
+    </div>
+</body>
+</html>
