@@ -802,8 +802,10 @@ function isApproved(pr) {
     });
 
     const states = Object.values(reviewerMap);
-    // Approved if at least one approval and no changes requested
-    return states.includes('APPROVED') && !states.includes('CHANGES_REQUESTED');
+    // Approved if more approvals than changes requested
+    const approvedCount = states.filter(s => s === 'APPROVED').length;
+    const changesCount = states.filter(s => s === 'CHANGES_REQUESTED').length;
+    return approvedCount > 0 && approvedCount > changesCount;
 }
 
 function getApprovedStatus(pr) {
