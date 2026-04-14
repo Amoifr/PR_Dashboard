@@ -1060,7 +1060,7 @@ function createTable(prs) {
         }
 
         html += `<tr class="${rowClass}" data-search="${pr.title.toLowerCase()} ${pr.user.login.toLowerCase()} ${repo.toLowerCase()} ${getComponents(pr).join(' ').toLowerCase()}">
-            <td><span class="label" style="background:#30363d;">${repo.split('/')[1] || repo}</span></td>
+            <td data-sort="${repo.toLowerCase()}"><span class="label" style="background:#30363d;">${getDisplayRepoName(repo)}</span></td>
             <td><a href="${pr.html_url}" target="_blank" class="pr-number">#${pr.number}</a></td>
             <td class="title-cell">${mineLabel}<a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a></td>
             <td class="author">@${pr.user.login}</td>
@@ -1068,8 +1068,8 @@ function createTable(prs) {
             <td class="status">${getCIStatus(pr)}</td>
             <td>${getApprovedStatus(pr)}</td>
             <td>${getReviewStatus(pr)}</td>
-            <td class="date">${formatDate(pr.created_at)}</td>
-            <td class="date">${formatDate(pr.updated_at)}</td>
+            <td class="date" data-sort="${new Date(pr.created_at).getTime()}">${formatDate(pr.created_at)}</td>
+            <td class="date" data-sort="${new Date(pr.updated_at).getTime()}">${formatDate(pr.updated_at)}</td>
         </tr>`;
     });
 
@@ -1182,6 +1182,8 @@ function renderDashboard() {
     document.getElementById('content-approved').innerHTML = createTable(approvedPRs);
     document.getElementById('content-merged').innerHTML = createTable(mergedPRs);
     document.getElementById('content-closed').innerHTML = createTable(closedPRs);
+
+    document.querySelectorAll('.tab-content table').forEach(makeTableSortable);
 }
 
 // Tab switching

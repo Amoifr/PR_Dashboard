@@ -205,6 +205,84 @@ function formatDate(dateStr) {
     return new Date(dateStr).toLocaleDateString(locales[currentLang] || 'en-GB');
 }
 
+function getDisplayRepoName(repo) {
+    if (!repo) return '';
+    const parts = repo.split('/');
+    if (parts.length !== 2) return repo;
+    const [owner, name] = parts;
+    return owner.toLowerCase() === name.toLowerCase() ? owner : `${owner}/${name}`;
+}
+
+// ========== TABLE SORTING ==========
+function makeTableSortable(table) {
+    if (!table || table.dataset.sortableInit === '1') return;
+    table.dataset.sortableInit = '1';
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, idx) => {
+        if (th.hasAttribute('data-no-sort')) return;
+        th.classList.add('sortable');
+        th.addEventListener('click', () => sortTableByColumn(table, idx, th));
+    });
+}
+
+function getCellSortValue(cell) {
+    if (!cell) return '';
+    if (cell.dataset && cell.dataset.sort !== undefined) return cell.dataset.sort;
+    return (cell.textContent || '').trim();
+}
+
+function parseSortValue(v) {
+    if (v === '' || v == null) return { type: 'empty', value: '' };
+    const s = String(v).trim();
+    // Relative time: 5m, 3h, 2d, 4mo, 1y (optional space: "5 d")
+    const rel = /^(\d+)\s*(m|h|d|mo|y)$/i.exec(s);
+    if (rel) {
+        const n = parseInt(rel[1], 10);
+        const unit = rel[2].toLowerCase();
+        const mul = { m: 1, h: 60, d: 60 * 24, mo: 60 * 24 * 30, y: 60 * 24 * 365 };
+        return { type: 'num', value: n * mul[unit] };
+    }
+    // Pure number (with optional # prefix)
+    const num = /^#?(-?\d+(?:\.\d+)?)$/.exec(s);
+    if (num) return { type: 'num', value: parseFloat(num[1]) };
+    return { type: 'str', value: s.toLowerCase() };
+}
+
+function sortTableByColumn(table, colIdx, th) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const dir = th.dataset.sortDir === 'asc' ? 'desc' : 'asc';
+    table.querySelectorAll('thead th').forEach(other => {
+        if (other !== th) {
+            delete other.dataset.sortDir;
+            other.classList.remove('sort-asc', 'sort-desc');
+        }
+    });
+    th.dataset.sortDir = dir;
+    th.classList.toggle('sort-asc', dir === 'asc');
+    th.classList.toggle('sort-desc', dir === 'desc');
+
+    rows.sort((a, b) => {
+        const va = parseSortValue(getCellSortValue(a.children[colIdx]));
+        const vb = parseSortValue(getCellSortValue(b.children[colIdx]));
+        if (va.type === 'empty' && vb.type === 'empty') return 0;
+        if (va.type === 'empty') return 1;
+        if (vb.type === 'empty') return -1;
+        let cmp;
+        if (va.type === 'num' && vb.type === 'num') {
+            cmp = va.value - vb.value;
+        } else {
+            cmp = String(va.value).localeCompare(String(vb.value));
+        }
+        return dir === 'asc' ? cmp : -cmp;
+    });
+
+    const frag = document.createDocumentFragment();
+    rows.forEach(r => frag.appendChild(r));
+    tbody.appendChild(frag);
+}
+
 function formatRelativeTime(dateStr) {
     const now = Date.now();
     const date = new Date(dateStr).getTime();

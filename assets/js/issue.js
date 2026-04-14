@@ -618,12 +618,12 @@ function renderIssueTable(items) {
             <th>${t('thAge')}</th>
             <th>${t('thComments')}</th>
             <th>${t('thLastActivity')}</th>
-            <th>${t('thActions')}</th>
+            <th data-no-sort>${t('thActions')}</th>
         </tr></thead><tbody>`;
 
     items.forEach(item => {
         const issue = item.issue;
-        const shortRepo = item.repo.split('/')[1];
+        const shortRepo = getDisplayRepoName(item.repo);
         const labelNames = (issue.labels || []).map(l => l.name.toLowerCase());
         const isGoodFirst = labelNames.includes('good first issue') || labelNames.includes('help wanted');
         const rowClass = isGoodFirst ? 'good-first-issue' : '';
@@ -640,12 +640,12 @@ function renderIssueTable(items) {
 
         html += `<tr class="${rowClass}" data-search="${searchText}">
             <td><span class="score-badge ${getScoreClass(item.score)}">${item.score}</span></td>
-            <td><span class="repo-btn" style="cursor:default">${shortRepo}</span></td>
+            <td data-sort="${item.repo.toLowerCase()}"><span class="repo-btn" style="cursor:default">${shortRepo}</span></td>
             <td class="issue-title-cell"><a href="${issue.html_url}" target="_blank"><span class="issue-number">#${issue.number}</span> <span class="issue-title">${issue.title}</span></a></td>
             <td>${labelsHtml}</td>
-            <td class="date">${formatRelativeTime(issue.created_at)}</td>
+            <td class="date" data-sort="${new Date(issue.created_at).getTime()}">${formatRelativeTime(issue.created_at)}</td>
             <td>${issue.comments}</td>
-            <td class="date">${formatRelativeTime(issue.updated_at)}</td>
+            <td class="date" data-sort="${new Date(issue.updated_at).getTime()}">${formatRelativeTime(issue.updated_at)}</td>
             <td class="actions-cell">
                 <button class="${commentBtnClass}" onclick="openCommentModal('${item.repo}', ${issue.number}, '${escapedTitle}')" title="${commented ? t('alreadyCommented') : t('commentBtn')}">
                     <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v7.5A1.75 1.75 0 0 1 13.25 12H9.06l-2.573 2.573A1.458 1.458 0 0 1 4 13.543V12H2.75A1.75 1.75 0 0 1 1 10.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h4.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg>
@@ -657,6 +657,9 @@ function renderIssueTable(items) {
 
     html += '</tbody></table>';
     container.innerHTML = html;
+
+    const table = container.querySelector('table');
+    if (table) makeTableSortable(table);
 }
 
 // ========== COMMENT MODAL INIT ==========
