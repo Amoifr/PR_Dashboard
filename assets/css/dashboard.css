@@ -25,6 +25,17 @@ tr.pr-approved {
     );
 }
 tr.pr-approved:hover { background: rgba(63, 185, 80, 0.25); }
+tr.pr-draft {
+    background: repeating-linear-gradient(
+        135deg,
+        rgba(139, 148, 158, 0.08),
+        rgba(139, 148, 158, 0.08) 8px,
+        rgba(139, 148, 158, 0.18) 8px,
+        rgba(139, 148, 158, 0.18) 16px
+    );
+    font-style: italic;
+}
+tr.pr-draft:hover { background: rgba(139, 148, 158, 0.25); }
 tr.pr-closed {
     background: repeating-linear-gradient(
         45deg,
@@ -36,6 +47,29 @@ tr.pr-closed {
     opacity: 0.7;
 }
 tr.pr-closed:hover { opacity: 1; }
+tr.hidden-by-search, tr.hidden-by-status { display: none; }
+
+/* Status filter select in table header */
+.status-filter {
+    background: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.status-filter:hover { border-color: #8b949e; }
+.status-filter:focus { outline: none; border-color: #58a6ff; }
+
+/* Status badges in table */
+.status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.status-badge-open     { background: rgba(63, 185, 80, 0.2);  color: #3fb950; }
+.status-badge-draft    { background: rgba(139, 148, 158, 0.2); color: #c9d1d9; border: 1px dashed #8b949e; padding: 1px 7px; }
+.status-badge-approved { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+.status-badge-merged   { background: rgba(163, 113, 247, 0.2); color: #a371f7; }
+.status-badge-closed   { background: rgba(248, 81, 73, 0.2);  color: #f85149; }
 
 .pr-number { font-weight: 600; color: #58a6ff; }
 .pr-title { color: #c9d1d9; }
@@ -71,6 +105,11 @@ tr.pr-closed:hover { opacity: 1; }
 .stat-card.approved { border-left: 3px solid #58a6ff; }
 .stat-card.merged { border-left: 3px solid #a371f7; }
 .stat-card.closed { border-left: 3px solid #f85149; }
+
+/* Open card: split open / draft (e.g. "70/4") */
+.count-open-sep { color: #6e7681; margin: 0 2px; font-weight: 400; }
+.count-draft { color: #8b949e; }
+.stat-label-hint { color: #8b949e; font-size: 11px; font-weight: 400; margin-left: 4px; }
 
 /* KPI Evolution indicators */
 .stat-value-row { display: flex; align-items: center; justify-content: center; gap: 8px; }

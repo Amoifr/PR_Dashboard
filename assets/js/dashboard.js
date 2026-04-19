@@ -29,6 +29,7 @@ let prDonutChart = null;
 // Donut chart colors - Status palette (cool tones matching KPI cards)
 const STATUS_COLORS = {
     open: '#3fb950',      // Green
+    draft: '#8b949e',     // Gray (GitHub draft color)
     approved: '#58a6ff',  // Blue
     merged: '#a371f7',    // Purple
     closed: '#f85149'     // Red
@@ -59,11 +60,13 @@ function updateDonutChart(filteredPRs) {
 
     // Calculate status distribution
     const openPRs = filteredPRs.filter(pr => pr.prState === 'OPEN');
+    const draftPRs = openPRs.filter(pr => pr.draft === true);
     const approvedPRs = openPRs.filter(pr => {
+        if (pr.draft === true) return false;
         if (!pr.reviews || !Array.isArray(pr.reviews)) return false;
         return pr.reviews.some(r => r.state === 'APPROVED');
     });
-    const openNotApproved = openPRs.length - approvedPRs.length;
+    const openNotApproved = openPRs.length - approvedPRs.length - draftPRs.length;
     const mergedPRs = filteredPRs.filter(pr => pr.prState === 'MERGED');
     const closedPRs = filteredPRs.filter(pr => pr.prState === 'CLOSED');
 
@@ -83,9 +86,9 @@ function updateDonutChart(filteredPRs) {
     const repoColors = repoNames.map((_, i) => REPO_COLORS[i % REPO_COLORS.length]);
 
     // Status data (inner ring)
-    const statusData = [openNotApproved, approvedPRs.length, mergedPRs.length, closedPRs.length];
-    const statusLabels = ['Open', 'Approved', 'Merged', 'Closed'];
-    const statusColors = [STATUS_COLORS.open, STATUS_COLORS.approved, STATUS_COLORS.merged, STATUS_COLORS.closed];
+    const statusData = [openNotApproved, draftPRs.length, approvedPRs.length, mergedPRs.length, closedPRs.length];
+    const statusLabels = ['Open', 'Draft', 'Approved', 'Merged', 'Closed'];
+    const statusColors = [STATUS_COLORS.open, STATUS_COLORS.draft, STATUS_COLORS.approved, STATUS_COLORS.merged, STATUS_COLORS.closed];
     const totalPRs = filteredPRs.length;
 
     // Plugin to draw text in center
@@ -1023,6 +1026,18 @@ function createTable(prs) {
         return `<p style="text-align:center; padding:40px; color:#8b949e;">${t('noPr')}</p>`;
     }
 
+    // Collect status values present in the list (for header filter)
+    const statusesPresent = new Set();
+    prs.forEach(pr => statusesPresent.add(getPRStatus(pr)));
+    const statusOptions = ['OPEN', 'DRAFT', 'APPROVED', 'MERGED', 'CLOSED'].filter(s => statusesPresent.has(s));
+
+    let statusFilterHtml = `<select class="status-filter" onchange="filterTableByStatus(this)">
+        <option value="all">${t('thStatus')}</option>`;
+    statusOptions.forEach(s => {
+        statusFilterHtml += `<option value="${s}">${t('status' + s.charAt(0) + s.slice(1).toLowerCase())}</option>`;
+    });
+    statusFilterHtml += '</select>';
+
     let html = `<table>
         <thead>
             <tr>
@@ -1032,6 +1047,7 @@ function createTable(prs) {
                 <th>${t('thAuthor')}</th>
                 <th>${t('thLabels')}</th>
                 <th>CI</th>
+                <th>${statusFilterHtml}</th>
                 <th>${t('thApproved')}</th>
                 <th>${t('thReviews')}</th>
                 <th>${t('thCreated')}</th>
@@ -1049,23 +1065,28 @@ function createTable(prs) {
         const isMine = pr.user.login.toLowerCase() === myUsername.toLowerCase();
         const mineLabel = isMine ? '<span class="label label-mine">MOI</span> ' : '';
 
+        const prStatus = getPRStatus(pr);
+
         // Determine row class based on PR state
         let rowClass = '';
         if (pr.prState === 'MERGED') {
             rowClass = 'pr-merged';
         } else if (pr.prState === 'CLOSED') {
             rowClass = 'pr-closed';
+        } else if (pr.prState === 'OPEN' && pr.draft === true) {
+            rowClass = 'pr-draft';
         } else if (pr.prState === 'OPEN' && isApproved(pr)) {
             rowClass = 'pr-approved';
         }
 
-        html += `<tr class="${rowClass}" data-search="${pr.title.toLowerCase()} ${pr.user.login.toLowerCase()} ${repo.toLowerCase()} ${getComponents(pr).join(' ').toLowerCase()}">
+        html += `<tr class="${rowClass}" data-status="${prStatus}" data-search="${pr.title.toLowerCase()} ${pr.user.login.toLowerCase()} ${repo.toLowerCase()} ${getComponents(pr).join(' ').toLowerCase()}">
             <td data-sort="${repo.toLowerCase()}"><span class="label" style="background:#30363d;">${getDisplayRepoName(repo)}</span></td>
             <td><a href="${pr.html_url}" target="_blank" class="pr-number">#${pr.number}</a></td>
             <td class="title-cell">${mineLabel}<a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a></td>
             <td class="author">@${pr.user.login}</td>
             <td>${components}</td>
             <td class="status">${getCIStatus(pr)}</td>
+            <td data-sort="${prStatus}">${renderStatusBadge(prStatus)}</td>
             <td>${getApprovedStatus(pr)}</td>
             <td>${getReviewStatus(pr)}</td>
             <td class="date" data-sort="${new Date(pr.created_at).getTime()}">${formatDate(pr.created_at)}</td>
@@ -1075,6 +1096,40 @@ function createTable(prs) {
 
     html += '</tbody></table>';
     return html;
+}
+
+function getPRStatus(pr) {
+    if (pr.prState === 'MERGED') return 'MERGED';
+    if (pr.prState === 'CLOSED') return 'CLOSED';
+    if (pr.draft === true) return 'DRAFT';
+    if (isApproved(pr)) return 'APPROVED';
+    return 'OPEN';
+}
+
+function renderStatusBadge(status) {
+    const map = {
+        OPEN:     { cls: 'status-badge-open',     label: t('statusOpen') },
+        DRAFT:    { cls: 'status-badge-draft',    label: t('statusDraft') },
+        APPROVED: { cls: 'status-badge-approved', label: t('statusApproved') },
+        MERGED:   { cls: 'status-badge-merged',   label: t('statusMerged') },
+        CLOSED:   { cls: 'status-badge-closed',   label: t('statusClosed') }
+    };
+    const s = map[status] || map.OPEN;
+    return `<span class="status-badge ${s.cls}">${s.label}</span>`;
+}
+
+function filterTableByStatus(selectEl) {
+    const value = selectEl.value;
+    const tbody = selectEl.closest('table').querySelector('tbody');
+    tbody.querySelectorAll('tr').forEach(row => {
+        if (value === 'all') {
+            row.classList.remove('hidden-by-status');
+        } else if (row.dataset.status === value) {
+            row.classList.remove('hidden-by-status');
+        } else {
+            row.classList.add('hidden-by-status');
+        }
+    });
 }
 
 let currentRepoFilter = 'all';
@@ -1130,15 +1185,27 @@ function renderDashboard() {
 
     const minePRs = filteredPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
     const openPRs = filteredPRs.filter(pr => pr.prState === 'OPEN');
+    const draftPRs = openPRs.filter(pr => pr.draft === true);
+    const openNonDraftPRs = openPRs.filter(pr => pr.draft !== true);
     const approvedPRs = openPRs.filter(pr => {
+        if (pr.draft === true) return false;
         if (!pr.reviews || !Array.isArray(pr.reviews)) return false;
         return pr.reviews.some(r => r.state === 'APPROVED');
     });
     const mergedPRs = filteredPRs.filter(pr => pr.prState === 'MERGED');
     const closedPRs = filteredPRs.filter(pr => pr.prState === 'CLOSED');
 
-    // Update counts
-    document.getElementById('count-open').textContent = openPRs.length;
+    // Update counts (Open displayed as "non-draft/draft" when drafts exist)
+    const countOpenEl = document.getElementById('count-open');
+    if (draftPRs.length > 0) {
+        countOpenEl.innerHTML = `${openNonDraftPRs.length}<span class="count-open-sep">/</span><span class="count-draft">${draftPRs.length}</span>`;
+    } else {
+        countOpenEl.textContent = openPRs.length;
+    }
+    const labelDraftHint = document.getElementById('label-open-draft');
+    if (labelDraftHint) {
+        labelDraftHint.textContent = draftPRs.length > 0 ? `(${t('draft')})` : '';
+    }
     document.getElementById('count-approved').textContent = approvedPRs.length;
     document.getElementById('count-merged').textContent = mergedPRs.length;
     document.getElementById('count-closed').textContent = closedPRs.length;
@@ -1201,7 +1268,11 @@ document.getElementById('search').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
     document.querySelectorAll('tbody tr').forEach(row => {
         const searchText = row.dataset.search || '';
-        row.style.display = searchText.includes(query) ? '' : 'none';
+        if (searchText.includes(query)) {
+            row.classList.remove('hidden-by-search');
+        } else {
+            row.classList.add('hidden-by-search');
+        }
     });
 });
 
