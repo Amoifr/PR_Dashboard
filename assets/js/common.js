@@ -193,6 +193,20 @@ async function fetchWithAuth(url) {
     return response.json();
 }
 
+// Fetch every page of a search query (the Search API returns at most 100
+// results per page, and 1000 results in total)
+async function fetchAllSearchPages(baseUrl) {
+    const items = [];
+    let totalCount = 0;
+    for (let page = 1; page <= 10; page++) {
+        const data = await fetchWithAuth(`${baseUrl}&per_page=100&page=${page}`);
+        totalCount = data.total_count;
+        items.push(...data.items);
+        if (data.items.length < 100 || items.length >= totalCount) break;
+    }
+    return { total_count: totalCount, items };
+}
+
 // ========== PROGRESS ==========
 function updateProgress(percent, text) {
     document.getElementById('progressFill').style.width = percent + '%';

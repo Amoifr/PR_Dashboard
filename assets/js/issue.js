@@ -124,8 +124,8 @@ async function discoverRepos() {
     updateProgress(20, t('discoveringRepos'));
 
     try {
-        const result = await fetchWithAuth(
-            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:merged&per_page=100&sort=updated`
+        const result = await fetchAllSearchPages(
+            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:merged&sort=updated`
         );
 
         const repos = [...new Set(

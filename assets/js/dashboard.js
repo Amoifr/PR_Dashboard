@@ -611,18 +611,18 @@ async function loadData() {
     try {
         // Load MY PRs across all GitHub
         updateProgress(10, t('loadingOpen'));
-        const myOpenPRs = await fetchWithAuth(
-            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:open&per_page=100&sort=updated`
+        const myOpenPRs = await fetchAllSearchPages(
+            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:open&sort=updated`
         );
 
         updateProgress(40, t('loadingMerged'));
-        const myMergedPRs = await fetchWithAuth(
-            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:merged&per_page=100&sort=updated`
+        const myMergedPRs = await fetchAllSearchPages(
+            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:merged&sort=updated`
         );
 
         updateProgress(70, t('loadingClosed'));
-        const myClosedPRs = await fetchWithAuth(
-            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:closed+is:unmerged&per_page=50&sort=updated`
+        const myClosedPRs = await fetchAllSearchPages(
+            `${API_BASE}/search/issues?q=author:${myUsername}+is:pr+is:closed+is:unmerged&sort=updated`
         );
 
         updateProgress(80, t('processing'));
