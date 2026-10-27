@@ -1,6 +1,7 @@
 const CACHE_KEY = 'pr_dashboard_cache';
 const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in ms
 const OLD_PRS_KEY = 'pr_dashboard_show_old';
+const REPO_FILTER_EXPANDED_KEY = 'pr_dashboard_repo_filter_expanded';
 const CELEBRATION_KEY = 'pr_dashboard_celebration';
 
 // Bots to ignore when determining who needs to respond
@@ -1134,6 +1135,7 @@ function filterTableByStatus(selectEl) {
 
 let currentRepoFilter = 'all';
 let celebrationChecked = false;
+let repoFilterExpanded = localStorage.getItem(REPO_FILTER_EXPANDED_KEY) === 'true';
 
 function getUniqueRepos() {
     const repos = {};
@@ -1148,7 +1150,8 @@ function renderRepoFilter() {
     const filteredPRs = getFilteredPRs();
     const repos = getUniqueRepos();
     const container = document.getElementById('repoFilter');
-    container.innerHTML = `<span class="repo-filter-label">${t('filterByRepo')}</span>`;
+    container.classList.toggle('collapsed', !repoFilterExpanded);
+    container.innerHTML = `<button class="repo-filter-label repo-filter-toggle" aria-expanded="${repoFilterExpanded}"><span class="repo-filter-chevron">▸</span>${t('filterByRepo')}</button>`;
 
     // Add "All" button
     const totalCount = filteredPRs.length;
@@ -1162,6 +1165,11 @@ function renderRepoFilter() {
     });
 
     // Add click handlers
+    container.querySelector('.repo-filter-toggle').addEventListener('click', () => {
+        repoFilterExpanded = !repoFilterExpanded;
+        localStorage.setItem(REPO_FILTER_EXPANDED_KEY, repoFilterExpanded);
+        renderRepoFilter();
+    });
     container.querySelectorAll('.repo-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             currentRepoFilter = btn.dataset.repo;

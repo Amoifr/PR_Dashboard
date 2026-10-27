@@ -82,6 +82,11 @@ a:hover { text-decoration: underline; }
 /* Repo filter */
 .repo-filter { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .repo-filter-label { color: #8b949e; font-size: 13px; margin-right: 10px; }
+.repo-filter-toggle { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; }
+.repo-filter-toggle:hover { color: #c9d1d9; }
+.repo-filter-chevron { display: inline-block; margin-right: 6px; transition: transform 0.2s; }
+.repo-filter-toggle[aria-expanded="true"] .repo-filter-chevron { transform: rotate(90deg); }
+.repo-filter.collapsed .repo-btn:not(.active) { display: none; }
 .repo-btn { padding: 5px 12px; border: 1px solid #30363d; border-radius: 20px; background: #21262d; color: #c9d1d9; font-size: 12px; cursor: pointer; transition: all 0.2s; }
 .repo-btn:hover { border-color: #58a6ff; color: #58a6ff; }
 .repo-btn.active { background: #388bfd33; border-color: #58a6ff; color: #58a6ff; }
