@@ -193,6 +193,18 @@ async function fetchWithAuth(url) {
     return response.json();
 }
 
+async function graphqlWithAuth(query, variables = {}) {
+    const response = await fetch(`${API_BASE}/graphql`, {
+        method: 'POST',
+        headers: { 'Authorization': `bearer ${ghToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, variables })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const json = await response.json();
+    if (!json.data) throw new Error(json.errors?.[0]?.message || 'GraphQL error');
+    return json.data;
+}
+
 // Fetch every page of a search query (the Search API returns at most 100
 // results per page, and 1000 results in total)
 async function fetchAllSearchPages(baseUrl) {

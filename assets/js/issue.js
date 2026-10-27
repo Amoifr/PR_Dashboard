@@ -212,23 +212,62 @@ async function batchFetch(requests, batchSize = 5) {
     return results;
 }
 
+// ========== LINKED PR DETECTION ==========
+const LINKED_PR_BATCH_SIZE = 50;
+
+// Returns the numbers of the given issues that have an open pull request (drafts
+// included): linked through the Development sidebar or a closing keyword, from
+// any repository, or mentioning the issue from the same repository
+async function findIssuesWithOpenPR(repo, issueNumbers) {
+    const [owner, name] = repo.split('/');
+    const withOpenPR = new Set();
+
+    for (let i = 0; i < issueNumbers.length; i += LINKED_PR_BATCH_SIZE) {
+        const batch = issueNumbers.slice(i, i + LINKED_PR_BATCH_SIZE);
+        const fields = batch.map(n => `i${n}: issue(number: ${n}) {
+            number
+            closedByPullRequestsReferences(first: 10, includeClosedPrs: false) { nodes { state } }
+            timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], last: 50) {
+                nodes { ... on CrossReferencedEvent { source { ... on PullRequest { state repository { nameWithOwner } } } } }
+            }
+        }`).join('\n');
+
+        try {
+            const data = await graphqlWithAuth(
+                `query($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { ${fields} } }`,
+                { owner, name }
+            );
+            for (const issue of Object.values(data.repository || {})) {
+                if (!issue) continue;
+                const linked = issue.closedByPullRequestsReferences.nodes.some(pr => pr.state === 'OPEN');
+                const mentioned = issue.timelineItems.nodes.some(e =>
+                    e.source?.state === 'OPEN' &&
+                    e.source.repository?.nameWithOwner.toLowerCase() === repo.toLowerCase()
+                );
+                if (linked || mentioned) withOpenPR.add(issue.number);
+            }
+        } catch (err) {
+            // Fall back on scanning the bodies of the repository's open PRs
+            console.warn(`Linked PR detection failed for ${repo}, falling back on PR bodies:`, err);
+            const openPRs = await fetchWithAuth(`${API_BASE}/repos/${repo}/pulls?state=open&per_page=100`).catch(() => []);
+            for (const n of batch) {
+                const ref = new RegExp(`#${n}(?!\\d)`);
+                if (openPRs.some(pr => ref.test(pr.body || ''))) withOpenPR.add(n);
+            }
+        }
+    }
+
+    return withOpenPR;
+}
+
 // ========== SCORING ==========
-function scoreIssue(issue, repoOpenPRs, comments) {
+function scoreIssue(issue, hasOpenPR, comments) {
     // --- BLOCKING CRITERIA ---
     if (issue.assignee || (issue.assignees && issue.assignees.length > 0)) return null;
     if (issue.user.login.toLowerCase() === myUsername.toLowerCase()) return null;
     if (!issue.body || issue.body.length < 50) return null;
 
-    // Check for linked PR
-    const issueNum = issue.number;
-    const hasLinkedPR = repoOpenPRs.some(pr => {
-        const body = (pr.body || '').toLowerCase();
-        return body.includes(`#${issueNum}`) ||
-               body.includes(`fixes #${issueNum}`) ||
-               body.includes(`closes #${issueNum}`) ||
-               body.includes(`resolves #${issueNum}`);
-    });
-    if (hasLinkedPR) return null;
+    if (hasOpenPR) return null;
 
     // Must be validated by a maintainer
     const authorIsMaintainer = MAINTAINER_ASSOCIATIONS.includes(issue.author_association);
@@ -300,39 +339,29 @@ async function loadIssues() {
             }
         }
 
-        // Phase 2: Fetch open PRs per repo (for linked issue detection)
+        // Phase 2: Pre-filter candidates, then drop those with an open PR
         updateLoadingTitle('phasePRs');
-        const repoOpenPRs = {};
+        let totalCandidates = 0;
+        let processedCandidates = 0;
+
+        const repoCandidates = {};
         for (let i = 0; i < repos.length; i++) {
             const repo = repos[i];
             currentStep++;
             const pct = Math.round((currentStep / totalSteps) * 80);
             updateProgress(pct, t('fetchingPRs', { repo: repo.split('/')[1] }) + ` (${i + 1}/${repos.length})`);
-            try {
-                repoOpenPRs[repo] = await fetchWithAuth(
-                    `${API_BASE}/repos/${repo}/pulls?state=open&per_page=100`
-                );
-            } catch {
-                repoOpenPRs[repo] = [];
-            }
-        }
-
-        // Phase 3: Pre-filter and fetch comments for candidates
-        let totalCandidates = 0;
-        let processedCandidates = 0;
-
-        // Count candidates first
-        const repoCandidates = {};
-        for (const repo of repos) {
-            const issues = repoIssues[repo] || [];
-            repoCandidates[repo] = issues.filter(issue => {
+            const candidates = (repoIssues[repo] || []).filter(issue => {
                 if (issue.assignee || (issue.assignees && issue.assignees.length > 0)) return false;
                 if (issue.user.login.toLowerCase() === myUsername.toLowerCase()) return false;
                 if (!issue.body || issue.body.length < 50) return false;
                 return true;
             });
+            const withOpenPR = await findIssuesWithOpenPR(repo, candidates.map(issue => issue.number));
+            repoCandidates[repo] = candidates.filter(issue => !withOpenPR.has(issue.number));
             totalCandidates += repoCandidates[repo].length;
         }
+
+        // Phase 3: Fetch comments for candidates
 
         updateLoadingTitle('phaseComments');
         updateProgress(85, t('fetchingComments') + ` (0/${totalCandidates})`);
@@ -340,7 +369,6 @@ async function loadIssues() {
         for (const repo of repos) {
             currentStep++;
             const candidates = repoCandidates[repo];
-            const openPRs = repoOpenPRs[repo] || [];
 
             const commentRequests = candidates.map(issue => ({
                 key: issue.number,
@@ -353,7 +381,7 @@ async function loadIssues() {
 
             for (const issue of candidates) {
                 const comments = commentsMap[issue.number] || [];
-                const score = scoreIssue(issue, openPRs, comments);
+                const score = scoreIssue(issue, false, comments);
                 if (score !== null) {
                     allScoredIssues.push({ issue, repo, score });
                 }
@@ -398,9 +426,9 @@ async function refreshSingleIssue(repo, issueNumber) {
     if (btn) { btn.disabled = true; btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="animation: spin 1s linear infinite;"><path d="M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z"></path></svg>'; }
 
     try {
-        const [issue, openPRs, comments] = await Promise.all([
+        const [issue, withOpenPR, comments] = await Promise.all([
             fetchWithAuth(`${API_BASE}/repos/${repo}/issues/${issueNumber}`),
-            fetchWithAuth(`${API_BASE}/repos/${repo}/pulls?state=open&per_page=100`),
+            findIssuesWithOpenPR(repo, [issueNumber]),
             fetchWithAuth(`${API_BASE}/repos/${repo}/issues/${issueNumber}/comments?per_page=10`)
         ]);
 
@@ -411,7 +439,7 @@ async function refreshSingleIssue(repo, issueNumber) {
 
         // Re-score
         if (!issue.pull_request) {
-            const score = scoreIssue(issue, openPRs, comments);
+            const score = scoreIssue(issue, withOpenPR.has(issueNumber), comments);
             if (score !== null) {
                 allScoredIssues.push({ issue, repo, score });
                 allScoredIssues.sort((a, b) => b.score - a.score);
