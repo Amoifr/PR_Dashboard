@@ -47,21 +47,7 @@ tr.pr-closed {
     opacity: 0.7;
 }
 tr.pr-closed:hover { opacity: 1; }
-tr.hidden-by-search, tr.hidden-by-status { display: none; }
-
-/* Status filter select in table header */
-.status-filter {
-    background: #0d1117;
-    color: #c9d1d9;
-    border: 1px solid #30363d;
-    border-radius: 4px;
-    padding: 3px 6px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: inherit;
-}
-.status-filter:hover { border-color: #8b949e; }
-.status-filter:focus { outline: none; border-color: #58a6ff; }
+tr.hidden-by-search { display: none; }
 
 /* Status badges in table */
 .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; white-space: nowrap; }

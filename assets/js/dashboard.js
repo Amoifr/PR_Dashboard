@@ -1027,18 +1027,6 @@ function createTable(prs) {
         return `<p style="text-align:center; padding:40px; color:#8b949e;">${t('noPr')}</p>`;
     }
 
-    // Collect status values present in the list (for header filter)
-    const statusesPresent = new Set();
-    prs.forEach(pr => statusesPresent.add(getPRStatus(pr)));
-    const statusOptions = ['OPEN', 'DRAFT', 'APPROVED', 'MERGED', 'CLOSED'].filter(s => statusesPresent.has(s));
-
-    let statusFilterHtml = `<select class="status-filter" onchange="filterTableByStatus(this)">
-        <option value="all">${t('thStatus')}</option>`;
-    statusOptions.forEach(s => {
-        statusFilterHtml += `<option value="${s}">${t('status' + s.charAt(0) + s.slice(1).toLowerCase())}</option>`;
-    });
-    statusFilterHtml += '</select>';
-
     let html = `<table>
         <thead>
             <tr>
@@ -1048,7 +1036,7 @@ function createTable(prs) {
                 <th>${t('thAuthor')}</th>
                 <th>${t('thLabels')}</th>
                 <th>CI</th>
-                <th>${statusFilterHtml}</th>
+                <th>${t('thStatus')}</th>
                 <th>${t('thApproved')}</th>
                 <th>${t('thReviews')}</th>
                 <th>${t('thCreated')}</th>
@@ -1080,7 +1068,7 @@ function createTable(prs) {
             rowClass = 'pr-approved';
         }
 
-        html += `<tr class="${rowClass}" data-status="${prStatus}" data-search="${pr.title.toLowerCase()} ${pr.user.login.toLowerCase()} ${repo.toLowerCase()} ${getComponents(pr).join(' ').toLowerCase()}">
+        html += `<tr class="${rowClass}" data-search="${pr.title.toLowerCase()} ${pr.user.login.toLowerCase()} ${repo.toLowerCase()} ${getComponents(pr).join(' ').toLowerCase()}">
             <td data-sort="${repo.toLowerCase()}"><span class="label" style="background:#30363d;">${getDisplayRepoName(repo)}</span></td>
             <td><a href="${pr.html_url}" target="_blank" class="pr-number">#${pr.number}</a></td>
             <td class="title-cell">${mineLabel}<a href="${pr.html_url}" target="_blank" class="pr-title">${pr.title}</a></td>
@@ -1117,20 +1105,6 @@ function renderStatusBadge(status) {
     };
     const s = map[status] || map.OPEN;
     return `<span class="status-badge ${s.cls}">${s.label}</span>`;
-}
-
-function filterTableByStatus(selectEl) {
-    const value = selectEl.value;
-    const tbody = selectEl.closest('table').querySelector('tbody');
-    tbody.querySelectorAll('tr').forEach(row => {
-        if (value === 'all') {
-            row.classList.remove('hidden-by-status');
-        } else if (row.dataset.status === value) {
-            row.classList.remove('hidden-by-status');
-        } else {
-            row.classList.add('hidden-by-status');
-        }
-    });
 }
 
 let currentRepoFilter = 'all';
