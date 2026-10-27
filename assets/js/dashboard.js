@@ -1,6 +1,8 @@
 const CACHE_KEY = 'pr_dashboard_cache';
 const CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in ms
 const OLD_PRS_KEY = 'pr_dashboard_show_old';
+const SHOW_MERGED_KEY = 'pr_dashboard_show_merged';
+const SHOW_CLOSED_KEY = 'pr_dashboard_show_closed';
 const REPO_FILTER_EXPANDED_KEY = 'pr_dashboard_repo_filter_expanded';
 const CELEBRATION_KEY = 'pr_dashboard_celebration';
 
@@ -25,6 +27,8 @@ const IGNORED_BOTS = [
 let allPRs = [];
 let forceRefreshReviews = false;
 let showOldPRs = localStorage.getItem(OLD_PRS_KEY) === 'true';
+let showMergedPRs = localStorage.getItem(SHOW_MERGED_KEY) === 'true';
+let showClosedPRs = localStorage.getItem(SHOW_CLOSED_KEY) === 'true';
 let prDonutChart = null;
 
 // Donut chart colors - Status palette (cool tones matching KPI cards)
@@ -513,6 +517,18 @@ function hideCelebrationModal() {
 function toggleOldPRs() {
     showOldPRs = document.getElementById('showOldPRs').checked;
     localStorage.setItem(OLD_PRS_KEY, showOldPRs);
+    renderDashboard();
+}
+
+function toggleMergedPRs() {
+    showMergedPRs = document.getElementById('showMergedPRs').checked;
+    localStorage.setItem(SHOW_MERGED_KEY, showMergedPRs);
+    renderDashboard();
+}
+
+function toggleClosedPRs() {
+    showClosedPRs = document.getElementById('showClosedPRs').checked;
+    localStorage.setItem(SHOW_CLOSED_KEY, showClosedPRs);
     renderDashboard();
 }
 
@@ -1165,7 +1181,12 @@ function renderDashboard() {
     // Apply filters: repo + old PRs toggle
     const filteredPRs = filterByRepo(getFilteredPRs());
 
-    const minePRs = filteredPRs.filter(pr => pr.user.login.toLowerCase() === myUsername.toLowerCase());
+    // The merged/closed switches only apply to "My PRs", the one list mixing every state
+    const minePRs = filteredPRs.filter(pr =>
+        pr.user.login.toLowerCase() === myUsername.toLowerCase() &&
+        (showMergedPRs || pr.prState !== 'MERGED') &&
+        (showClosedPRs || pr.prState !== 'CLOSED')
+    );
     const openPRs = filteredPRs.filter(pr => pr.prState === 'OPEN');
     const draftPRs = openPRs.filter(pr => pr.draft === true);
     const openNonDraftPRs = openPRs.filter(pr => pr.draft !== true);
@@ -1233,16 +1254,32 @@ function renderDashboard() {
     document.getElementById('content-closed').innerHTML = createTable(closedPRs);
 
     document.querySelectorAll('.tab-content table').forEach(makeTableSortable);
+
+    updateStateTabsVisibility();
+}
+
+// Hide the Merged/Closed tabs while their switch is off
+function updateStateTabsVisibility() {
+    const visible = { merged: showMergedPRs, closed: showClosedPRs };
+    for (const [name, show] of Object.entries(visible)) {
+        const tab = document.querySelector(`.tab[data-tab="${name}"]`);
+        tab.style.display = show ? '' : 'none';
+        if (!show && tab.classList.contains('active')) {
+            activateTab(document.querySelector('.tab[data-tab="mine"]'));
+        }
+    }
+}
+
+function activateTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('content-' + tab.dataset.tab).classList.add('active');
 }
 
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById('content-' + tab.dataset.tab).classList.add('active');
-    });
+    tab.addEventListener('click', () => activateTab(tab));
 });
 
 // Search functionality
@@ -1276,6 +1313,8 @@ window.addEventListener('load', () => {
 
     // Initialize switch state from localStorage
     document.getElementById('showOldPRs').checked = showOldPRs;
+    document.getElementById('showMergedPRs').checked = showMergedPRs;
+    document.getElementById('showClosedPRs').checked = showClosedPRs;
     updateCacheInfo();
     updateConfigDisplay();
 

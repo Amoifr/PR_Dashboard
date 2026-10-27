@@ -47,6 +47,20 @@
                         <span class="slider"></span>
                     </label>
                 </div>
+                <div class="switch-container">
+                    <span class="switch-label" data-i18n="mergedPrsToggle">Merged PRs</span>
+                    <label class="switch">
+                        <input type="checkbox" id="showMergedPRs" onchange="toggleMergedPRs()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="switch-container">
+                    <span class="switch-label" data-i18n="closedPrsToggle">Closed PRs</span>
+                    <label class="switch">
+                        <input type="checkbox" id="showClosedPRs" onchange="toggleClosedPRs()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div>
                     <div class="refresh-btn-group">
                         <button class="refresh-btn" id="refreshBtn" onclick="forceRefresh()">
