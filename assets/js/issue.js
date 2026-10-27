@@ -4,12 +4,14 @@ const REPOS_KEY = 'issue_finder_repos';
 const DISCOVERED_REPOS_KEY = 'issue_finder_discovered_repos';
 const CACHE_KEY = 'issue_finder_cache';
 const COMMENTED_KEY = 'issue_finder_commented';
+const REPO_CHIPS_COLLAPSED_COUNT = 12;
 
 const MAINTAINER_ASSOCIATIONS = ['OWNER', 'MEMBER', 'COLLABORATOR'];
 
 let allScoredIssues = [];
 let totalIssuesAnalyzed = 0;
 let currentRepoFilter = 'all';
+let repoChipsExpanded = false;
 
 // pageTranslations loaded from i18n/i18n-issue.js
 // ========== LOADING OVERLAY ==========
@@ -36,6 +38,7 @@ function onCredentialsSaved() {
 }
 
 function onLanguageChange() {
+    renderRepoChips();
     if (allScoredIssues.length > 0) renderDashboard();
 }
 
@@ -104,14 +107,47 @@ function renderRepoChips() {
         return;
     }
 
-    container.innerHTML = allRepos.map(repo => {
-        const isDiscovered = discovered.includes(repo);
-        const cls = isDiscovered ? 'discovered' : 'manual';
-        return `<span class="repo-chip ${cls}">
-            ${repo}
-            <button class="remove-chip" onclick="removeRepo('${repo}')" title="${t('removeRepo')}">×</button>
-        </span>`;
+    // Group by owner (biggest groups first); owners with a single repo go together at the end
+    const byOwner = {};
+    allRepos.forEach(repo => {
+        const owner = repo.split('/')[0];
+        (byOwner[owner] = byOwner[owner] || []).push(repo);
+    });
+    const groups = Object.entries(byOwner)
+        .filter(([, repos]) => repos.length > 1)
+        .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+        .map(([owner, repos]) => ({ owner, repos: repos.sort() }));
+    const others = Object.values(byOwner).filter(repos => repos.length === 1).flat().sort();
+    if (others.length > 0) groups.push({ owner: null, repos: others });
+
+    const hiddenCount = allRepos.length - REPO_CHIPS_COLLAPSED_COUNT;
+    let remaining = repoChipsExpanded ? allRepos.length : REPO_CHIPS_COLLAPSED_COUNT;
+
+    container.innerHTML = groups.map(group => {
+        if (remaining <= 0) return '';
+        const shown = group.repos.slice(0, remaining);
+        remaining -= shown.length;
+        const chips = shown.map(repo => {
+            const cls = discovered.includes(repo) ? 'discovered' : 'manual';
+            const name = group.owner ? repo.split('/')[1] : repo;
+            return `<span class="repo-chip ${cls}" title="${repo}">
+                ${name}
+                <button class="remove-chip" onclick="removeRepo('${repo}')" title="${t('removeRepo')}">×</button>
+            </span>`;
+        }).join('');
+        const label = group.owner ? `${group.owner} <span class="repo-group-count">${group.repos.length}</span>` : t('otherRepos');
+        return `<div class="repo-group"><span class="repo-group-owner">${label}</span>${chips}</div>`;
     }).join('');
+
+    if (hiddenCount > 0) {
+        const label = repoChipsExpanded ? t('showLessRepos') : t('showMoreRepos', { count: hiddenCount });
+        container.innerHTML += `<button class="repo-chips-toggle" onclick="toggleRepoChips()">${label}</button>`;
+    }
+}
+
+function toggleRepoChips() {
+    repoChipsExpanded = !repoChipsExpanded;
+    renderRepoChips();
 }
 
 async function discoverRepos() {

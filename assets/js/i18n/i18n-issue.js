@@ -4,6 +4,9 @@ var pageTranslations = {
     en: {
         issueSubtitle: 'Find mature open-source issues to contribute to',
         trackedRepos: 'Tracked Repositories',
+        showMoreRepos: '+{count} more',
+        showLessRepos: 'Show less',
+        otherRepos: 'Others',
         repoHint: 'Repos where you contributed are auto-discovered. You can also add repos manually.',
         addRepoPlaceholder: 'owner/repo',
         addRepo: 'Add',
@@ -65,6 +68,9 @@ var pageTranslations = {
     fr: {
         issueSubtitle: 'Trouvez des issues open-source matures pour contribuer',
         trackedRepos: 'Dépôts suivis',
+        showMoreRepos: '+{count} de plus',
+        showLessRepos: 'Réduire',
+        otherRepos: 'Autres',
         repoHint: 'Les dépôts où vous avez contribué sont auto-découverts. Vous pouvez aussi en ajouter manuellement.',
         addRepoPlaceholder: 'owner/repo',
         addRepo: 'Ajouter',
@@ -126,6 +132,9 @@ var pageTranslations = {
     de: {
         issueSubtitle: 'Finden Sie reife Open-Source-Issues zum Beitragen',
         trackedRepos: 'Verfolgte Repositories',
+        showMoreRepos: '+{count} weitere',
+        showLessRepos: 'Weniger anzeigen',
+        otherRepos: 'Andere',
         repoHint: 'Repos, zu denen Sie beigetragen haben, werden automatisch entdeckt. Sie können auch manuell hinzufügen.',
         addRepoPlaceholder: 'owner/repo',
         addRepo: 'Hinzufügen',
@@ -160,6 +169,9 @@ var pageTranslations = {
     es: {
         issueSubtitle: 'Encuentra issues open-source maduras para contribuir',
         trackedRepos: 'Repositorios seguidos',
+        showMoreRepos: '+{count} más',
+        showLessRepos: 'Mostrar menos',
+        otherRepos: 'Otros',
         repoHint: 'Los repos donde contribuiste se auto-descubren. También puedes agregar repos manualmente.',
         addRepoPlaceholder: 'owner/repo',
         addRepo: 'Agregar',
@@ -194,6 +206,9 @@ var pageTranslations = {
     it: {
         issueSubtitle: 'Trova issue open-source mature per contribuire',
         trackedRepos: 'Repository seguiti',
+        showMoreRepos: '+{count} altri',
+        showLessRepos: 'Mostra meno',
+        otherRepos: 'Altri',
         repoHint: 'I repo dove hai contribuito vengono scoperti automaticamente. Puoi anche aggiungerne manualmente.',
         addRepoPlaceholder: 'owner/repo',
         addRepo: 'Aggiungi',
